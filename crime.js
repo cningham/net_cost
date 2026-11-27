@@ -12,12 +12,10 @@ let crime='ALL',selIso=null,drawn=false;
 const isEst=o=>o.hd===0;
 const fmt=v=>v>=10?v.toFixed(0):String(+v.toFixed(2));
 const fx=v=>'×'+fmt(v);
-// binned colour on log scale: 3 blue, neutral, 3 red
-const BINS=[[0,1/3,'--b3','below ×0.33'],[1/3,.5,'--b2','×0.33–0.5'],[.5,.8,'--b1','×0.5–0.8'],[.8,1.25,'--z','×0.8–1.25'],[1.25,2,'--r1','×1.25–2'],[2,3,'--r2','×2–3'],[3,Infinity,'--r3','above ×3']];
-const bin=v=>BINS.find(b=>v>=b[0]&&v<b[1]);
-const colorOf=v=>css(bin(v)[2]);
-const inkOf=v=>v>1.25?css('--neg'):v<.8?css('--pos'):css('--ink');
-const darkCell=v=>['--b3','--b2','--r2','--r3'].includes(bin(v)[2]);
+// continuous green (below natives) -> red (above natives), log scale: x0.25 -> green end, x4 -> red end
+const tOf=v=>.5+Math.log(v)/(2*Math.log(4));
+const colorOf=v=>PAL.col(tOf(v));
+const inkOf=v=>PAL.ink(tOf(v));
 const tip=$('tip');
 function showTip(e,h){tip.innerHTML=h;tip.hidden=false;const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px'}
 function hideTip(){tip.hidden=true}
@@ -56,8 +54,8 @@ function drawMap(){
 }
 function select(o){selIso=o.iso;map.querySelectorAll('path.sel').forEach(p=>p.classList.remove('sel'));map.querySelectorAll(`path[data-iso="${o.iso}"]`).forEach(p=>p.classList.add('sel'));detail(o)}
 function legend(){
- $('c-legend').innerHTML=BINS.map(b=>`<span><i style="background:${css(b[2])}"></i>${b[3]}</span>`).join('')+
- `<span><i style="background:repeating-linear-gradient(45deg,${css('--r2')} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
+ $('c-legend').innerHTML=`<span class="gbar"><b style="background:${PAL.grad(false)}"></b><span class="gl"><span>×0.25</span><span>×1</span><span>×4</span></span></span>`+
+ `<span><i style="background:repeating-linear-gradient(45deg,${PAL.col(.5)} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
 }
 $('c-zoom').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
  $('c-zoom').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
@@ -81,7 +79,7 @@ function list(){
 }
 $('c-search').addEventListener('input',list);$('c-showEst').addEventListener('change',list);
 // heatmaps
-function cell(v,extra){return `<td style="background:${colorOf(v)};color:${darkCell(v)?'#fff':css('--ink')}"${extra||''}>${fmt(v)}</td>`}
+function cell(v,extra){return `<td style="background:${colorOf(v)};color:${PAL.textOn(tOf(v))}"${extra||''}>${fmt(v)}</td>`}
 function heat(){
  const all=$('c-heatAll').checked;let rows=O.filter(o=>!isEst(o)).sort((a,b)=>b.rr.ALL[0]-a.rr.ALL[0]);if(!all)rows=rows.slice(0,30);
  $('c-heat').innerHTML=`<thead><tr><th></th>${CR.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
@@ -91,11 +89,9 @@ function heat(){
 $('c-heatAll').addEventListener('change',heat);
 let ukl='agg';
 function uk(){
- const rows=C.uk[ukl];const flags=[];
+ const rows=C.uk[ukl];
  $('c-uk').innerHTML=`<thead><tr><th></th>${UKC.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
-  rows.map(r=>{let n=r.g;if(r.flag){let i=flags.indexOf(r.flag);if(i<0){flags.push(r.flag);i=flags.length-1}n+=` <sup>${i+1}</sup>`}
-   return `<tr><th>${n}</th>${UKC.map(([k])=>cell(r.rr[k][0])).join('')}</tr>`}).join('')+'</tbody>';
- $('c-ukNote').innerHTML=flags.map((f,i)=>`<sup>${i+1}</sup> ${f.charAt(0).toUpperCase()+f.slice(1)}.`).join('<br>');
+  rows.map(r=>`<tr><th>${r.g}</th>${UKC.map(([k])=>cell(r.rr[k][0])).join('')}</tr>`).join('')+'</tbody>';
 }
 $('c-ukLevel').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ukl=b.dataset.l;$('c-ukLevel').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));uk()}));
 // method tables
@@ -112,7 +108,7 @@ function tables(){
  const T={no_DE:'Without Germany',convictions_only:'Convictions only (DK, NO, ES)',no_groups:'Without regional groups (FI, ES, Basque Country)'};
  $('c-sens').innerHTML='<thead><tr><th>Test</th><th>ρ</th></tr></thead><tbody>'+Object.entries(C.sens).map(([k,v])=>`<tr><td>${T[k]}</td><td>${v.toFixed(2)}</td></tr>`).join('')+'</tbody>';
 }
-function all(){crimeSeg();drawMap();legend();list();heat();uk()}
+function all(){document.querySelectorAll('#tab-crime .scale-bar').forEach(b=>b.style.background=PAL.grad(false));crimeSeg();drawMap();legend();list();heat();uk()}
 function show(){if(!drawn){all();select(byIso['MAR']);drawn=true}}
 tables();
 // tabs
