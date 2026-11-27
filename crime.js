@@ -12,7 +12,7 @@ let crime='ALL',selIso=null,drawn=false;
 const isEst=o=>o.hd===0;
 const fmt=v=>v>=10?v.toFixed(0):String(+v.toFixed(2));
 const fx=v=>'×'+fmt(v);
-const SC=PAL.scale([.25,.5,.8,1,1.3,1.7,2.5,3.5,5],'low',true);
+const SC=PAL.scale([.25,.5,1,1.5,2,2.6,3.3,4.5,6],'low',true);
 const colorOf=v=>SC.col(v);
 const inkOf=v=>SC.ink(v);
 const xfmt=a=>'×'+a;
