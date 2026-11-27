@@ -12,7 +12,7 @@ section{margin-top:56px}
 .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink-2);margin:0}
 .lead{font-size:clamp(16px,2vw,18px);color:var(--ink-2);max-width:720px;margin:0}
 .lead b{color:var(--ink)}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:28px}
 .tile{background:var(--surface-2);border-radius:14px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:4px;color:var(--ink-2);font-size:14px}
 .tile .big{font-size:clamp(22px,3vw,28px);font-weight:700;color:var(--ink);letter-spacing:-.01em}
 em.neg{color:var(--neg);font-style:normal}em.pos{color:var(--pos);font-style:normal}
@@ -72,3 +72,13 @@ footer{margin-top:40px;font-size:12px;color:var(--ink-2)}
  section{margin-top:40px}
 }
 @media (hover:none){.tip{display:none}}
+
+.method h3{font-size:16px;margin:26px 0 8px}
+.method p{margin:6px 0;max-width:820px}
+.eq{overflow-x:auto;overflow-y:hidden;margin:10px 0;padding:4px 0}
+.tbl{border-collapse:collapse;font-size:14px;width:100%;max-width:820px}
+.tbl th,.tbl td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{color:var(--ink-2);font-weight:600}
+.tbl td:nth-child(n+2){font-variant-numeric:tabular-nums}
+@media (max-width:720px){.tbl{font-size:13px}.method .tbl{display:block;overflow-x:auto}}
+.eqs{display:flex;flex-wrap:wrap;justify-content:center;column-gap:48px}.eqs .eq{margin:4px 0;padding:4px 4px;max-width:100%}
