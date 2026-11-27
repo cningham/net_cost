@@ -81,25 +81,25 @@ $('search').addEventListener('input',list);$('showEst').addEventListener('change
 // ---------- BUBBLE ----------
 function bubble(){
  const svg=$('bubble');svg.innerHTML='';const narrow=svg.parentNode.clientWidth<600;
- const BW=narrow?400:980,BH=narrow?440:430,L=narrow?46:54,R=14,T=48,B=50;svg.setAttribute('viewBox',`0 0 ${BW} ${BH}`);
+ const BW=narrow?400:980,BH=narrow?440:430,L=narrow?46:54,R=14,T=narrow?62:70,B=50;svg.setAttribute('viewBox',`0 0 ${BW} ${BH}`);
  const lx=v=>L+(Math.log10(v)-3)/2*(BW-L-R),ly=v=>T+(28-v)/72*(BH-T-B);
  const gr=el('g',{class:'grid'},svg);
  [-40,-20,0,20].forEach(t=>{el('line',{x1:L,x2:BW-R,y1:ly(t),y2:ly(t),style:t===0?`stroke:${css('--mid')};stroke-width:1.5`:null},gr);const tx=el('text',{x:L-8,y:ly(t)+4,'text-anchor':'end'},svg);tx.textContent=(t>0?'+':'')+t+'%'});
  [1000,3000,10000,30000,100000].forEach(t=>{el('line',{x1:lx(t),x2:lx(t),y1:T,y2:BH-B},gr);const tx=el('text',{x:lx(t),y:BH-B+18,'text-anchor':'middle'},svg);tx.textContent='$'+(t/1000)+'k'});
  const xl=el('text',{x:(L+BW-R)/2,y:BH-8,'text-anchor':'middle'},svg);xl.textContent='Income per head in the country of origin (PPP, log scale)';
  const nat=el('text',{x:BW-R-4,y:ly(0)-6,'text-anchor':'end'},svg);nat.textContent='natives';
- const pts=O.filter(o=>o.ev!==EST).sort((a,b)=>b.ref-a.ref);
- const rr=v=>(narrow?3.5:4.5)+Math.sqrt(v)*(narrow?0.85:1.45);
- const LAB=new Set(narrow?['SOM','SYR','IND','USA','PAK','IRQ','GBR']:['SOM','SYR','IRQ','AFG','ERI','IND','USA','GBR','CHN','BIH','IRN','TUR','PAK','POL']);
- pts.forEach(o=>{const cx=lx(Math.max(1000,o.gdp)),cy=ly(o.mean),c=colorOf(o.mean),r=rr(o.ref);
+ const pts=O.filter(o=>o.ev!==EST&&o.mig).sort((a,b)=>b.mig-a.mig);
+ const rr=v=>Math.max(2.5,(narrow?19:27)*Math.sqrt(v/450000));
+ const LAB=new Set(narrow?['SOM','SYR','IND','USA','PAK','IRQ','GBR']:['SOM','SYR','IRQ','AFG','ERI','IND','USA','GBR','CHN','MAR','IRN','TUR','PAK','POL']);
+ pts.forEach(o=>{const cx=lx(Math.max(1000,o.gdp)),cy=ly(o.mean),c=colorOf(o.mean),r=rr(o.mig);
   const g=el('g',{},svg);el('circle',{cx,cy,r,fill:c,'fill-opacity':.88,stroke:css('--surface'),'stroke-width':1.5},g);
-  if(LAB.has(o.iso)){const off={GBR:-13,USA:15,BIH:17,TUR:-11}[o.iso]||0;const right=cx>BW-150||o.iso==='ERI';const t=el('text',{x:right?cx-r-4:cx+r+4,y:cy+4+off,'text-anchor':right?'end':'start',style:`fill:${css('--ink')}`},g);t.textContent=o.name}
+  if(LAB.has(o.iso)){const off={GBR:-13,USA:15,IRN:-12,BIH:6}[o.iso]||0;const right=cx>BW-150||o.iso==='ERI';const t=el('text',{x:right?cx-r-4:cx+r+4,y:cy+4+off,'text-anchor':right?'end':'start',style:`fill:${css('--ink')}`},g);t.textContent=o.name}
   g.style.cursor='pointer';
-  g.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>origin income $${o.gdp.toLocaleString('en-US')}<br>peak refugees ${o.ref} per 1,000 people`));
+  g.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>origin income $${o.gdp.toLocaleString('en-US')}<br>immigrants in DK+SE+NL+FI: ${o.mig.toLocaleString('en-US')}`));
   g.addEventListener('mouseleave',hideTip);g.addEventListener('click',()=>select(o));});
  // size legend
- let x=narrow?4:L+6;const sy=narrow?22:20;const lt=el('text',{x,y:sy+4,style:`fill:${css('--ink-2')}`},svg);lt.textContent=narrow?'Refugees per 1,000:':'Refugees (peak, per 1,000 people):';x+=narrow?128:226;
- [[1,'few'],[100,'100'],[300,'300']].forEach(s=>{const r=rr(s[0]);el('circle',{cx:x+r,cy:sy,r,fill:'none',stroke:css('--ink-2')},svg);const t=el('text',{x:x+2*r+5,y:sy+4},svg);t.textContent=s[1];x+=2*r+(narrow?34:44)});
+ let x=narrow?4:L+6;const sy=narrow?24:30;const lt=el('text',{x,y:sy+4,style:`fill:${css('--ink-2')}`},svg);lt.textContent=narrow?'Immigrants:':'Immigrants (DK+SE+NL+FI):';x+=narrow?72:170;
+ [[20000,'20k'],[100000,'100k'],[400000,'400k']].forEach(s=>{const r=rr(s[0]);el('circle',{cx:x+r,cy:sy,r,fill:'none',stroke:css('--ink-2')},svg);const t=el('text',{x:x+2*r+5,y:sy+4},svg);t.textContent=s[1];x+=2*r+(narrow?34:44)});
 }
 function all(){drawMap();legend();list();bubble()}
 all();select(byIso['SOM']);
