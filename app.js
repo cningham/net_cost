@@ -10,7 +10,7 @@ const money=v=>(v<0?'−':'+')+'US$'+Math.abs(Math.round(v/100)*100).toLocaleStr
 const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
 // continuous green (above natives) -> red (below natives)
-const SC=PAL.scale([-40,-30,-20,-12,-5,0,5,12,22],'high',false,'rg');
+const SC=PAL.scale([-30,-20,-10,0,10,20,30],'high',false,'g7');
 const colorOf=v=>SC.col(v);
 const inkOf=v=>SC.ink(v);
 const pfmt=a=>(a>0?'+':a<0?'−':'')+Math.abs(a)+'%';

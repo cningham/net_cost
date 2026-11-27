@@ -3,23 +3,23 @@
 (function(){
 const LIGHT=['#1f4e9c','#3a86c8','#2e9b4b','#8fc456','#f1d13f','#f5a03a','#ea6a2f','#d1342f','#8e1a1a'];
 const DARK =['#4a7fd4','#5aa8e6','#3cb25c','#9fd065','#f3d651','#f7a94c','#ef7840','#e04a42','#b83030'];
-// Red-to-green variant (no blue), best -> worst
-const RG_LIGHT=['#1e7b3a','#3f9e46','#78bb4f','#b5cf4a','#f1d13f','#f5a03a','#ea6a2f','#d1342f','#8e1a1a'];
-const RG_DARK =['#2f9a4c','#4fb257','#88c85e','#c2da5a','#f3d651','#f7a94c','#ef7840','#e04a42','#b83030'];
+// Fiscal: the original continuous green -> red ramp (7 stops, best -> worst)
+const G7_LIGHT=['#17753a','#3a9e4f','#86bb45','#d9b92c','#ec8a34','#d9473a','#a11f1f'];
+const G7_DARK =['#2f9e57','#4fb662','#97c955','#e3c443','#f0954a','#e65a4c','#c13a33'];
 const dark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const toHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
 const lum=c=>{const l=c.map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*l[0]+.7152*l[1]+.0722*l[2]};
-// anchors: 9 values in ascending order; good: 'low' if low values are favourable (crime), 'high' if high values are (fiscal); log: interpolate in log space; set: 'rg' for red-to-green only
+// anchors: one value per colour stop (9 by default) in ascending order; good: 'low' if low values are favourable (crime), 'high' if high values are (fiscal); log: interpolate in log space; set: 'g7' for the fiscal green-to-red ramp (anchors must then have 7 values)
 window.PAL={scale(anchors,good,log,set){
  const f=log?Math.log:x=>x, A=anchors.map(f);
- const stops=()=>{const S=(set==='rg'?(dark()?RG_DARK:RG_LIGHT):(dark()?DARK:LIGHT)).map(hex);return good==='low'?S:S.slice().reverse()};
- function rgb(v){const S=stops(),x=f(v);if(x<=A[0])return S[0];if(x>=A[8])return S[8];let i=0;while(x>A[i+1])i++;const k=(x-A[i])/(A[i+1]-A[i]);return S[i].map((c,j)=>c+(S[i+1][j]-c)*k)}
+ const stops=()=>{const S=(set==='g7'?(dark()?G7_DARK:G7_LIGHT):(dark()?DARK:LIGHT)).map(hex);return good==='low'?S:S.slice().reverse()};
+ function rgb(v){const S=stops(),x=f(v);if(x<=A[0])return S[0];const n=A.length-1;if(x>=A[n])return S[n];let i=0;while(x>A[i+1])i++;const k=(x-A[i])/(A[i+1]-A[i]);return S[i].map((c,j)=>c+(S[i+1][j]-c)*k)}
  return {
   col:v=>toHex(rgb(v)),
   ink:v=>{const c=rgb(v);if(dark())return toHex(c);const L=lum(c),k=L>.45?.55:L>.25?.72:1;return toHex(c.map(x=>x*k))},
   text:v=>lum(rgb(v))>.3?'#191919':'#ffffff',
   // segmented bar: equal-width segments between anchors, value labels at each boundary
-  bar:(fmt)=>{const S=stops().map(toHex);return `<div class="tbar">${S.slice(0,8).map((c,i)=>`<b style="background:linear-gradient(90deg,${c},${S[i+1]})"></b>`).join('')}</div><div class="tlab">${anchors.map((a,i)=>`<span style="left:${i/8*100}%">${fmt(a)}</span>`).join('')}</div>`}
+  bar:(fmt)=>{const S=stops().map(toHex);return `<div class="tbar">${S.slice(0,-1).map((c,i)=>`<b style="background:linear-gradient(90deg,${c},${S[i+1]})"></b>`).join('')}</div><div class="tlab">${anchors.map((a,i)=>`<span style="left:${i/(anchors.length-1)*100}%">${fmt(a)}</span>`).join('')}</div>`}
  }}};
 })();
