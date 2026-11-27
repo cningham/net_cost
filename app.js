@@ -11,7 +11,7 @@ $('usd10').textContent=(Math.round(D.avg_usd*0.1/100)*100).toLocaleString('en-US
 const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
 // continuous green (above natives) -> red (below natives)
-const SC=PAL.scale([-40,-32,-25,-18,-12,-6,0,10,22],'high',false);
+const SC=PAL.scale([-40,-30,-20,-12,-5,0,5,12,22],'high',false);
 const colorOf=v=>SC.col(v);
 const inkOf=v=>SC.ink(v);
 const pfmt=a=>(a>0?'+':a<0?'−':'')+Math.abs(a)+'%';
