@@ -11,9 +11,10 @@ $('usd10').textContent=(Math.round(D.avg_usd*0.1/100)*100).toLocaleString('en-US
 const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
 // continuous green (above natives) -> red (below natives)
-const tOf=v=>.5-v/60;
-const colorOf=v=>PAL.col(tOf(v));
-const inkOf=v=>PAL.ink(tOf(v));
+const SC=PAL.scale([-40,-30,-20,-12,-5,0,5,12,22],'high',false);
+const colorOf=v=>SC.col(v);
+const inkOf=v=>SC.ink(v);
+const pfmt=a=>(a>0?'+':a<0?'−':'')+Math.abs(a)+'%';
 const tip=$('tip');
 function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px'}
 function hideTip(){tip.hidden=true}
@@ -48,8 +49,8 @@ function drawMap(){
 }
 function select(o){selIso=o.iso;map.querySelectorAll('path.sel').forEach(p=>p.classList.remove('sel'));map.querySelectorAll(`path[data-iso="${o.iso}"]`).forEach(p=>p.classList.add('sel'));detail(o)}
 function legend(){
- $('legend').innerHTML=`<span class="gbar"><b style="background:${PAL.grad(true)}"></b><span class="gl"><span>−30%</span><span>0</span><span>+30%</span></span></span>`+
- `<span><i style="background:repeating-linear-gradient(45deg,${PAL.col(.5)} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
+ $('legend').innerHTML=`<div class="tscale">${SC.bar(pfmt)}</div>`+
+ `<span><i style="background:repeating-linear-gradient(45deg,${SC.col(0)} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
 }
 document.querySelectorAll('#tab-fiscal .seg button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('#tab-fiscal .seg button').forEach(x=>x.classList.toggle('on',x===b));
@@ -101,7 +102,7 @@ function bubble(){
  let x=narrow?4:L+6;const sy=narrow?24:30;const lt=el('text',{x,y:sy+4,style:`fill:${css('--ink-2')}`},svg);lt.textContent=narrow?'Immigrants:':'Immigrants (DK+SE+NL+FI):';x+=narrow?72:170;
  [[20000,'20k'],[100000,'100k'],[400000,'400k']].forEach(s=>{const r=rr(s[0]);el('circle',{cx:x+r,cy:sy,r,fill:'none',stroke:css('--ink-2')},svg);const t=el('text',{x:x+2*r+5,y:sy+4},svg);t.textContent=s[1];x+=2*r+(narrow?34:44)});
 }
-function all(){drawMap();legend();list();bubble();document.querySelectorAll('#tab-fiscal .scale-bar').forEach(b=>b.style.background=PAL.grad(true))}
+function all(){drawMap();legend();list();bubble();document.querySelectorAll('#tab-fiscal .scale').forEach(b=>b.innerHTML=`<div class="tscale big">${SC.bar(pfmt)}</div><div class="scale-labels"><span>below natives</span><span>above natives</span></div>`)}
 all();select(byIso['SOM']);
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(bubble,150)});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{all();if(selIso)select(byIso[selIso])});

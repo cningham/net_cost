@@ -6,7 +6,7 @@
 <title>Immigrants by country of origin: fiscal contribution and crime</title>
 <meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland) and recorded crime (nine official sources), combined with Bayesian models.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <div class="viz-root">
@@ -17,7 +17,6 @@
 
 <header class="hero">
   <h1>Net fiscal contribution of immigrants by country of origin</h1>
-  <p class="lead">Denmark, Sweden, Netherlands and Finland, combined into one score per origin country.</p>
 </header>
 
 <section class="explain">
@@ -130,7 +129,6 @@
 <main id="tab-crime" class="tab" hidden>
 <header class="hero">
   <h1>Recorded crime of immigrants by country of origin</h1>
-  <p class="lead">Denmark, Norway, Finland, the Netherlands, Germany, Switzerland, Spain and the Basque Country, combined into one rate ratio per origin and crime type.</p>
 </header>
 
 <section class="explain">
@@ -174,7 +172,7 @@
     <h2>By crime type</h2>
     <label class="chk small"><input type="checkbox" id="c-heatAll"> all origins</label>
   </div>
-  <p class="muted small">Rate ratio vs natives. Sorted by all offences. Measured origins only. Faded: no data for that crime type, pooled from the others.</p>
+  <p class="muted small">Rate ratio vs natives. Sorted by all offences. Measured origins only. Hatched: no data for that crime type, pooled from the others.</p>
   <div class="heat-wrap"><table class="heat" id="c-heat"></table></div>
 </section>
 
@@ -271,11 +269,11 @@
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="palette.js?v=7"></script>
-<script src="data/site-data.js?v=7"></script>
-<script src="app.js?v=7"></script>
-<script src="data/crime-data.js?v=7"></script>
-<script src="crime.js?v=7"></script>
+<script src="palette.js?v=8"></script>
+<script src="data/site-data.js?v=8"></script>
+<script src="app.js?v=8"></script>
+<script src="data/crime-data.js?v=8"></script>
+<script src="crime.js?v=8"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
 <script defer src="vendor/katex/auto-render.min.js" onload="document.querySelectorAll('.method').forEach(m=>renderMathInElement(m,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]}))"></script>
 </body>
