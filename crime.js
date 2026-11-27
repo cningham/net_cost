@@ -12,10 +12,10 @@ let crime='ALL',selIso=null,drawn=false;
 const isEst=o=>o.hd===0;
 const fmt=v=>v>=10?v.toFixed(0):String(+v.toFixed(2));
 const fx=v=>'×'+fmt(v);
-// continuous green (below natives) -> red (above natives), log scale: x0.25 -> green end, x4 -> red end
-const tOf=v=>.5+Math.log(v)/(2*Math.log(4));
-const colorOf=v=>PAL.col(tOf(v));
-const inkOf=v=>PAL.ink(tOf(v));
+const SC=PAL.scale([.25,.5,.8,1,1.3,1.7,2.5,3.5,5],'low',true);
+const colorOf=v=>SC.col(v);
+const inkOf=v=>SC.ink(v);
+const xfmt=a=>'×'+a;
 const tip=$('tip');
 function showTip(e,h){tip.innerHTML=h;tip.hidden=false;const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px'}
 function hideTip(){tip.hidden=true}
@@ -54,8 +54,8 @@ function drawMap(){
 }
 function select(o){selIso=o.iso;map.querySelectorAll('path.sel').forEach(p=>p.classList.remove('sel'));map.querySelectorAll(`path[data-iso="${o.iso}"]`).forEach(p=>p.classList.add('sel'));detail(o)}
 function legend(){
- $('c-legend').innerHTML=`<span class="gbar"><b style="background:${PAL.grad(false)}"></b><span class="gl"><span>×0.25</span><span>×1</span><span>×4</span></span></span>`+
- `<span><i style="background:repeating-linear-gradient(45deg,${PAL.col(.5)} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
+ $('c-legend').innerHTML=`<div class="tscale">${SC.bar(xfmt)}</div>`+
+ `<span><i style="background:repeating-linear-gradient(45deg,${SC.col(1)} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
 }
 $('c-zoom').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
  $('c-zoom').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
@@ -79,7 +79,7 @@ function list(){
 }
 $('c-search').addEventListener('input',list);$('c-showEst').addEventListener('change',list);
 // heatmaps
-function cell(v,extra){return `<td style="background:${colorOf(v)};color:${PAL.textOn(tOf(v))}"${extra||''}>${fmt(v)}</td>`}
+function cell(v,extra){return `<td style="background:${colorOf(v)};color:${SC.text(v)}"${extra||''}>${fmt(v)}</td>`}
 function heat(){
  const all=$('c-heatAll').checked;let rows=O.filter(o=>!isEst(o)).sort((a,b)=>b.rr.ALL[0]-a.rr.ALL[0]);if(!all)rows=rows.slice(0,30);
  $('c-heat').innerHTML=`<thead><tr><th></th>${CR.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
@@ -108,7 +108,7 @@ function tables(){
  const T={no_DE:'Without Germany',convictions_only:'Convictions only (DK, NO, ES)',no_groups:'Without regional groups (FI, ES, Basque Country)'};
  $('c-sens').innerHTML='<thead><tr><th>Test</th><th>ρ</th></tr></thead><tbody>'+Object.entries(C.sens).map(([k,v])=>`<tr><td>${T[k]}</td><td>${v.toFixed(2)}</td></tr>`).join('')+'</tbody>';
 }
-function all(){document.querySelectorAll('#tab-crime .scale-bar').forEach(b=>b.style.background=PAL.grad(false));crimeSeg();drawMap();legend();list();heat();uk()}
+function all(){document.querySelectorAll('#tab-crime .scale').forEach(b=>b.innerHTML=`<div class="tscale big">${SC.bar(xfmt)}</div><div class="scale-labels"><span>below natives</span><span>above natives</span></div>`);crimeSeg();drawMap();legend();list();heat();uk()}
 function show(){if(!drawn){all();select(byIso['MAR']);drawn=true}}
 tables();
 // tabs

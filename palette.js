@@ -1,17 +1,22 @@
-// Continuous green (favourable) -> red (unfavourable) scale, no grey. t in [0,1].
+// Temperature-style scale: dark green (favourable) -> green -> yellow -> orange -> red -> dark red -> purple (unfavourable).
+// Each tab anchors the nine colours on real values, so steps across the data range stay distinct. No grey.
 (function(){
-const LIGHT=['#17753a','#3a9e4f','#86bb45','#d9b92c','#ec8a34','#d9473a','#a11f1f'];
-const DARK=['#2f9e57','#4fb662','#97c955','#e3c443','#f0954a','#e65a4c','#c13a33'];
+const LIGHT=['#136b34','#2e9b4b','#8fc456','#f1d13f','#f5a03a','#ea6a2f','#d1342f','#961c2b','#5e1a4f'];
+const DARK =['#1f8a45','#3cb25c','#9fd065','#f3d651','#f7a94c','#ef7840','#e04a42','#b8304a','#9a4688'];
 const dark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const toHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
-function rgb(t){const S=(dark()?DARK:LIGHT).map(hex);t=Math.max(0,Math.min(1,t));const x=t*(S.length-1),i=Math.min(S.length-2,Math.floor(x)),f=x-i;return S[i].map((v,k)=>v+(S[i+1][k]-v)*f)}
 const lum=c=>{const l=c.map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*l[0]+.7152*l[1]+.0722*l[2]};
-window.PAL={
- col:t=>toHex(rgb(t)),
- // text/ink colour: darken in light mode so the yellow middle stays legible on white
- ink:t=>{const c=rgb(t);if(dark())return toHex(c);const L=lum(c),k=L>.3?.62:L>.18?.8:1;return toHex(c.map(v=>v*k))},
- textOn:t=>lum(rgb(t))>.33?'#191919':'#ffffff',
- grad:(rev)=>{const S=(dark()?DARK:LIGHT).slice();if(rev)S.reverse();return 'linear-gradient(90deg,'+S.join(',')+')'}
-};
+// anchors: 9 values in ascending order; good: 'low' if low values are favourable (crime), 'high' if high values are (fiscal); log: interpolate in log space
+window.PAL={scale(anchors,good,log){
+ const f=log?Math.log:x=>x, A=anchors.map(f);
+ const stops=()=>{const S=(dark()?DARK:LIGHT).map(hex);return good==='low'?S:S.slice().reverse()};
+ function rgb(v){const S=stops(),x=f(v);if(x<=A[0])return S[0];if(x>=A[8])return S[8];let i=0;while(x>A[i+1])i++;const k=(x-A[i])/(A[i+1]-A[i]);return S[i].map((c,j)=>c+(S[i+1][j]-c)*k)}
+ return {
+  col:v=>toHex(rgb(v)),
+  ink:v=>{const c=rgb(v);if(dark())return toHex(c);const L=lum(c),k=L>.45?.55:L>.25?.72:1;return toHex(c.map(x=>x*k))},
+  text:v=>lum(rgb(v))>.3?'#191919':'#ffffff',
+  // segmented bar: equal-width segments between anchors, value labels at each boundary
+  bar:(fmt)=>{const S=stops().map(toHex);return `<div class="tbar">${S.slice(0,8).map((c,i)=>`<b style="background:linear-gradient(90deg,${c},${S[i+1]})"></b>`).join('')}</div><div class="tlab">${anchors.map((a,i)=>`<span style="left:${i/8*100}%">${fmt(a)}</span>`).join('')}</div>`}
+ }}};
 })();
