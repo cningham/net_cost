@@ -11,7 +11,7 @@ $('usd10').textContent=(Math.round(D.avg_usd*0.1/100)*100).toLocaleString('en-US
 const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
 // binned diverging colour, equal arms (3 red, neutral, 3 blue)
-const BINS=[[-Infinity,-20,'--r3','below −20%'],[-20,-10,'--r2','−20 to −10%'],[-10,-3,'--r1','−10 to −3%'],[-3,3,'--z','±3% (like natives)'],[3,10,'--b1','+3 to +10%'],[10,20,'--b2','+10 to +20%'],[20,Infinity,'--b3','above +20%']];
+const BINS=[[-Infinity,-20,'--r3','below −20%'],[-20,-10,'--r2','−20 to −10%'],[-10,-3,'--r1','−10 to −3%'],[-3,3,'--z','±3%'],[3,10,'--b1','+3 to +10%'],[10,20,'--b2','+10 to +20%'],[20,Infinity,'--b3','above +20%']];
 const colorOf=v=>css(BINS.find(b=>v>=b[0]&&v<b[1])[2]);
 const inkOf=v=>v<0?css('--neg'):css('--pos');
 const tip=$('tip');
@@ -19,10 +19,10 @@ function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const w=tip.offsetW
 function hideTip(){tip.hidden=true}
 function detail(o){
  const est=o.ev===EST;
- const who=est?'<b>Estimated:</b> not reported on its own by any of the four countries, so it is inferred from regional data, origin income and refugee history.'
-   :'Measured by '+o.hosts.split(',').map(h=>HOST[h]).join(', ')+(o.ev==='multi-host'?'':' (one study only)')+'.';
- $('detail').innerHTML=`<div class="row"><h3>${o.name.replace(' (unspecified)','')}</h3><span class="val" style="color:${inkOf(o.mean)}">${sgn(o.mean)}</span><span class="muted">≈ ${money(o.usd)} per person per year compared with a native</span></div>
- <div class="muted small">Likely range ${sgn(o.lo)} to ${sgn(o.hi)} · rank ${o.rk} of ${O.length} · ${who}</div>`;
+ const who=est?'Modelled (regional group + covariates).'
+   :'Measured: '+o.hosts.split(',').map(h=>HOST[h]).join(', ');
+ $('detail').innerHTML=`<div class="row"><h3>${o.name.replace(' (unspecified)','')}</h3><span class="val" style="color:${inkOf(o.mean)}">${sgn(o.mean)}</span><span class="muted">≈ ${money(o.usd)} / person / year</span></div>
+ <div class="muted small">90% CrI ${sgn(o.lo)} to ${sgn(o.hi)} · rank ${o.rk}/${O.length} · ${who}</div>`;
 }
 
 // ---------- MAP ----------
@@ -41,7 +41,7 @@ function drawMap(){
   if(!o){path.addEventListener('mousemove',e=>showTip(e,`<b>${c.name}</b><br>no data`));path.addEventListener('mouseleave',hideTip);return}
   path.classList.add('has');path.dataset.iso=c.iso;if(c.iso===selIso)path.classList.add('sel');
   if(o.ev===EST)el('path',{d:c.d,fill:'url(#hatch)'},gh);
-  path.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>${money(o.usd)} per person per year${o.ev===EST?'<br><i>estimated</i>':''}`));
+  path.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>${money(o.usd)} / person / year${o.ev===EST?'<br><i>modelled</i>':''}`));
   path.addEventListener('mouseleave',hideTip);
   path.addEventListener('click',()=>select(o));
  });
@@ -49,7 +49,7 @@ function drawMap(){
 function select(o){selIso=o.iso;map.querySelectorAll('path.sel').forEach(p=>p.classList.remove('sel'));map.querySelectorAll(`path[data-iso="${o.iso}"]`).forEach(p=>p.classList.add('sel'));detail(o)}
 function legend(){
  $('legend').innerHTML=BINS.map(b=>`<span><i style="background:${css(b[2])}"></i>${b[3]}</span>`).join('')+
- `<span><i style="background:repeating-linear-gradient(45deg,${css('--b2')} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>estimated</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
+ `<span><i style="background:repeating-linear-gradient(45deg,${css('--b2')} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
 }
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));
@@ -73,7 +73,7 @@ function list(){
  if(!rows.length)h+='<p class="muted">No match.</p>';
  $('list').innerHTML=h;
  $('list').querySelectorAll('.li').forEach(r=>{const o=byIso[r.dataset.iso];
-  r.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>likely ${sgn(o.lo)} to ${sgn(o.hi)}<br>${money(o.usd)} per person per year`));
+  r.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>90% CrI ${sgn(o.lo)} to ${sgn(o.hi)}<br>${money(o.usd)} / person / year`));
   r.addEventListener('mouseleave',hideTip);r.addEventListener('click',()=>{select(o);$('detail').scrollIntoView({behavior:'smooth',block:'center'})});});
 }
 $('search').addEventListener('input',list);$('showEst').addEventListener('change',list);

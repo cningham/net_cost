@@ -3,89 +3,130 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What immigrants contribute to public finances, by country of origin</title>
-<meta name="description" content="Official estimates from Denmark, Sweden, the Netherlands and Finland combined into one score per country of origin.">
-<link rel="stylesheet" href="style.css?v=2">
+<title>Net fiscal contribution of immigrants by country of origin</title>
+<meta name="description" content="Net fiscal contribution by country of origin: Denmark, Sweden, Netherlands and Finland combined with a Bayesian measurement model.">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <div class="viz-root">
 
 <header class="hero">
-  <p class="eyebrow">Denmark · Sweden · Netherlands · Finland, combined</p>
-  <h1>What immigrants contribute to public finances, by country of origin</h1>
-  <p class="lead">Four countries publish how much tax immigrants pay compared with the public spending they receive. We combined the four studies into <b>one score per country of origin</b>. The score compares each group with natives.</p>
+  <h1>Net fiscal contribution of immigrants by country of origin</h1>
+  <p class="lead">Denmark, Sweden, Netherlands and Finland, combined into one score per origin country.</p>
   <div class="tiles">
-    <div class="tile"><span class="big">50</span><span>countries measured directly, plus 53 estimated</span></div>
-    <div class="tile"><span class="big"><em class="neg">−39%</em> to <em class="pos">+22%</em></span><span>from Somalia to the United Kingdom</span></div>
-    <div class="tile"><span class="big">2 drivers</span><span>wealth of the origin country, and whether people came as refugees</span></div>
+    <div class="tile"><span class="big">50 + 53</span><span>origins measured + modelled</span></div>
+    <div class="tile"><span class="big"><em class="neg">−39%</em> to <em class="pos">+22%</em></span><span>Somalia to United Kingdom</span></div>
   </div>
 </header>
 
 <section class="explain">
   <div class="scale" aria-hidden="true">
     <div class="scale-bar"></div>
-    <div class="scale-labels"><span>costs more than natives</span><span>same as natives</span><span>contributes more than natives</span></div>
+    <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
   </div>
-  <p><b>How to read the score:</b> it is the yearly difference from a native, per person, as a share of the country's income per head. <b>0%</b> means the group contributes the same as natives. <b>−10%</b> means about <b>US$<span id="usd10"></span> less per person per year</b> (2023 prices).</p>
+  <p><b>Score</b> = (annual net contribution per person − natives) / host GDP per capita. −10% ≈ −US$<span id="usd10"></span> per person per year (PPP, 2023).</p>
 </section>
 
 <section>
   <div class="sec-head">
-    <h2>The map</h2>
+    <h2>Map</h2>
     <div class="seg" role="group" aria-label="Map zoom">
       <button data-view="world" class="on">World</button><button data-view="eu">Europe &amp; Middle East</button>
     </div>
   </div>
   <div class="map-wrap"><svg id="map" role="img" aria-label="World map of origin scores"></svg></div>
   <div class="legend" id="legend"></div>
-  <div class="card" id="detail"><p class="muted">Tap or hover over a country to see its score.</p></div>
+  <div class="card" id="detail"></div>
 </section>
 
 <section>
   <div class="sec-head">
-    <h2>Every country, ranked</h2>
-    <input id="search" type="search" placeholder="Find a country…" aria-label="Find a country">
+    <h2>Ranking</h2>
+    <input id="search" type="search" placeholder="Search" aria-label="Search country">
   </div>
-  <p class="muted small">The dot is the best estimate, and the bar shows the range it is 90% likely to fall in. Wide bars mean less certainty. <label class="chk"><input type="checkbox" id="showEst"> include estimated countries</label></p>
+  <p class="muted small">Dot: posterior mean. Bar: 90% credible interval. <label class="chk"><input type="checkbox" id="showEst"> show modelled</label></p>
   <div id="list" class="list"></div>
 </section>
 
 <section>
-  <h2>Why countries differ</h2>
-  <p class="muted">Groups from richer countries score higher. Groups from countries that produced many refugees score lower. Bubble size shows the peak share of that country's population who were refugees.</p>
+  <h2>Covariates</h2>
+  <p class="muted small">x: origin GDP per capita (PPP, log). Bubble area: peak refugee outflow per 1,000 population.</p>
   <div class="chart-wrap"><svg id="bubble" role="img" aria-label="Score against origin-country income"></svg></div>
 </section>
 
 <section class="method">
-  <h2>How it was done</h2>
-  <ol class="steps">
-    <li><b>Collect</b> each official study's figure per country of origin.</li>
-    <li><b>Convert</b> every figure into the gap with natives, as a share of that country's GDP per head. This removes currency, price and income-level differences.</li>
-    <li><b>Combine</b> them with a Bayesian model. Each study measures the same hidden score with its own scale, because some studies are lifetime and some single-year. Countries that only appear in Dutch regional groups are filled in from origin income and refugee history.</li>
-    <li><b>Check</b> the result. The ranking barely changes when any one study is left out (rank correlation ≥ 0.96). It also matches UK tax data that the model never saw (0.77).</li>
-  </ol>
-  <p class="muted small">Limits: the studies cover different years (2011–2022) and arrival cohorts, and only Finland adjusts for age. The Dutch study counts children; the others do not. Scores describe group averages in Nordic-style welfare states, not individuals.</p>
+  <h2>Method</h2>
+
+  <h3>1. Data</h3>
+  <table class="tbl">
+    <thead><tr><th>Host <i>h</i></th><th>Year</th><th>Measure</th><th>Population</th><th><i>n</i></th></tr></thead>
+    <tbody>
+      <tr><td>Denmark</td><td>2019</td><td>Single-year net contribution</td><td>Immigrants, all ages</td><td>36</td></tr>
+      <tr><td>Sweden</td><td>2022</td><td>Single-year net contribution</td><td>Foreign-born, all ages</td><td>33</td></tr>
+      <tr><td>Netherlands</td><td>2016</td><td>Lifetime, discounted (2.5%)</td><td>1st + 2nd generation, regional groups</td><td>41</td></tr>
+      <tr><td>Finland<sup>*</sup></td><td>2011</td><td>Single-year, age-standardised</td><td>Ages 20–62</td><td>10</td></tr>
+    </tbody>
+  </table>
+  <p class="small muted"><sup>*</sup>Think-tank estimate, not official.</p>
+
+  <h3>2. Common unit</h3>
+  <div class="eqs"><div class="eq">$$y_{ih}=\frac{N_{ih}-N_{h}^{\text{nat}}}{\text{GDPpc}_{h,t}}$$</div><div class="eq">$$\tilde y_{ih}=\frac{y_{ih}}{s_h}$$</div></div>
+  <p class="small">\(N_{ih}\): net contribution per person of origin group \(i\) in host \(h\); \(N_h^{\text{nat}}\): natives; \(t\): data year; \(s_h\): SD of \(y_{ih}\) within host \(h\).</p>
+
+  <h3>3. Model</h3>
+  <div class="eqs"><div class="eq">$$\tilde y_{ih}\sim t_{5}\!\left(\alpha_h+\lambda_h\,\bar\theta_i,\ \sigma_h\right)$$</div><div class="eq">$$\bar\theta_i=\sum_{c\in G_i}\frac{\theta_c}{|G_i|}$$</div></div>
+  <div class="eqs"><div class="eq">$$\theta_c=b_0+\beta_1 z^{\text{gdp}}_c+\beta_2 z^{\text{ref}}_c+\beta_3\,\text{EU}_c+\tau u_c$$</div><div class="eq">$$u_c\sim\mathcal N(0,1)$$</div></div>
+  <p class="small">\(G_i\): origin countries in group \(i\) (one country, or a Dutch regional group). \(z^{\text{gdp}}\): standardised \(\log\) GDP per capita (PPP). \(z^{\text{ref}}\): standardised \(\log(1+\text{peak refugee outflow per 1{,}000})\). \(\text{EU}\): EU/EEA/CH origin.</p>
+  <p class="small">Identification: \(\alpha_{\text{DK}}=0,\ \lambda_{\text{DK}}=1\). Priors: \(b_0,\beta_k,\alpha_h,\log\lambda_h\sim\mathcal N(0,1)\); \(\tau,\sigma_h\sim\mathcal N^{+}(0,1)\).</p>
+  <p class="small">Inference: NUTS, 4 chains × 1,500 draws (2,500 tuning), \(\hat R\le1.05\). Score \(=100\,s_{\text{DK}}\,\theta_c\): posterior mean and 5–95% interval. US$ \(=\) score \(\times\) mean host GDP per capita (PPP 2023, US$72,435).</p>
+  <p class="small">Modelled: origins with no own observation, \(\theta_c\) inferred from \(G_i\) and covariates.</p>
+
+  <h3>4. Estimates</h3>
+  <table class="tbl">
+    <thead><tr><th>Parameter</th><th>Mean</th><th>90% CrI</th></tr></thead>
+    <tbody>
+      <tr><td>\(\beta_1\) GDP per capita (per SD)</td><td>+7.4</td><td>[4.0, 11.0]</td></tr>
+      <tr><td>\(\beta_2\) refugee outflow (per SD)</td><td>−5.8</td><td>[−8.5, −3.1]</td></tr>
+      <tr><td>\(\beta_3\) EU/EEA/CH</td><td>+1.0</td><td>[−4.6, 6.5]</td></tr>
+      <tr><td>\(\tau\)</td><td>9.2</td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="small muted">Units: percentage points of score.</p>
+
+  <h3>5. Validation (Spearman ρ)</h3>
+  <table class="tbl">
+    <thead><tr><th>Test</th><th>ρ</th></tr></thead>
+    <tbody>
+      <tr><td>Without Netherlands</td><td>0.96</td></tr>
+      <tr><td>Without Finland</td><td>1.00</td></tr>
+      <tr><td>Anchor Sweden instead of Denmark</td><td>1.00</td></tr>
+      <tr><td>Denmark incl. descendants</td><td>0.99</td></tr>
+      <tr><td>Without covariates</td><td>0.91</td></tr>
+      <tr><td>UK HMRC net tax (out of sample, <i>n</i> = 42)</td><td>0.77</td></tr>
+      <tr><td>Host pairs: DK–SE / DK–FI / FI–SE</td><td>0.76 / 0.83 / 0.59</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section class="sources">
-  <details>
-    <summary>Sources and data</summary>
-    <ul>
-      <li>Denmark: Finansministeriet (2023), <a href="https://fm.dk/media/5cnhiydz/indvandreres-nettobidrag-til-de-offentlige-finanser-i-2019_revideret-september-2023-a.pdf">Indvandreres nettobidrag til de offentlige finanser i 2019</a>, Fig. 2.11</li>
-      <li>Sweden: Konjunkturinstitutet (2025), <a href="https://www.konj.se/media/kpgnt5iw/specialstudie-117-invandrades-nettobidrag-till-de-offentliga-finanserna-1983-2022.pdf">Specialstudie 117</a>, Tabell 8</li>
-      <li>Netherlands: van de Beek et al. (2024), <a href="https://docs.iza.org/dp17569.pdf">IZA Discussion Paper 17569</a>, Table 4</li>
-      <li>Finland: Suomen Perusta / Salminen (2019), via <a href="https://suomenperusta.substack.com/p/the-fiscal-effects-of-immigration">The Fiscal Effects of Immigration in Finland</a>. Think tank, not official</li>
-      <li>Check only, UK: HMRC (2022), <a href="https://www.gov.uk/government/statistics/income-tax-national-insurance-contributions-tax-credits-and-child-benefit-statistics-for-non-uk-nationals-2019-to-2020">statistics for non-UK nationals 2019-20</a></li>
-      <li>Income, prices and refugees: <a href="https://data.worldbank.org/">World Bank WDI</a>, <a href="https://www.unhcr.org/refugee-statistics/">UNHCR Refugee Data Finder</a>. Map: <a href="https://www.naturalearthdata.com/">Natural Earth</a></li>
-      <li>Download: <a href="data/net_fiscal_contribution_by_origin_harmonised.xlsx">full spreadsheet (xlsx)</a> · <a href="data/results.json">results.json</a></li>
-    </ul>
-  </details>
+  <h2>Sources</h2>
+  <ul>
+    <li>Denmark: Finansministeriet (2023), <a href="https://fm.dk/media/5cnhiydz/indvandreres-nettobidrag-til-de-offentlige-finanser-i-2019_revideret-september-2023-a.pdf">Indvandreres nettobidrag til de offentlige finanser i 2019</a>, Fig. 2.11</li>
+    <li>Sweden: Konjunkturinstitutet (2025), <a href="https://www.konj.se/media/kpgnt5iw/specialstudie-117-invandrades-nettobidrag-till-de-offentliga-finanserna-1983-2022.pdf">Specialstudie 117</a>, Tabell 8</li>
+    <li>Netherlands: van de Beek et al. (2024), <a href="https://docs.iza.org/dp17569.pdf">IZA DP 17569</a>, Table 4</li>
+    <li>Finland: Salminen / Suomen Perusta (2019), <a href="https://suomenperusta.substack.com/p/the-fiscal-effects-of-immigration">The Fiscal Effects of Immigration in Finland</a></li>
+    <li>UK (validation): HMRC (2022), <a href="https://www.gov.uk/government/statistics/income-tax-national-insurance-contributions-tax-credits-and-child-benefit-statistics-for-non-uk-nationals-2019-to-2020">non-UK nationals 2019–20</a></li>
+    <li>Covariates: <a href="https://data.worldbank.org/">World Bank WDI</a>, <a href="https://www.unhcr.org/refugee-statistics/">UNHCR</a>. Map: <a href="https://www.naturalearthdata.com/">Natural Earth</a></li>
+    <li>Data: <a href="data/net_fiscal_contribution_by_origin_harmonised.xlsx">xlsx</a> · <a href="data/results.json">json</a></li>
+  </ul>
 </section>
 
-<footer>Updated November 2026</footer>
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="data/site-data.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="data/site-data.js?v=3"></script>
+<script src="app.js?v=3"></script>
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/auto-render.min.js" onload="renderMathInElement(document.querySelector('.method'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
 </body>
 </html>
