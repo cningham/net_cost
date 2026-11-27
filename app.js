@@ -51,8 +51,8 @@ function legend(){
  $('legend').innerHTML=BINS.map(b=>`<span><i style="background:${css(b[2])}"></i>${b[3]}</span>`).join('')+
  `<span><i style="background:repeating-linear-gradient(45deg,${css('--b2')} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>modelled</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
 }
-document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
- document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));
+document.querySelectorAll('#tab-fiscal .seg button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#tab-fiscal .seg button').forEach(x=>x.classList.toggle('on',x===b));
  animateView(VIEWS[b.dataset.view]);}));
 function animateView(to){const from=map.getAttribute('viewBox').split(' ').map(Number);const t0=performance.now(),dur=500;
  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
