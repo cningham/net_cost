@@ -6,7 +6,7 @@
 <title>Net fiscal contribution of immigrants by country of origin</title>
 <meta name="description" content="Net fiscal contribution by country of origin: Denmark, Sweden, Netherlands and Finland combined with a Bayesian measurement model.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <div class="viz-root">
@@ -51,12 +51,13 @@
 
 <section>
   <h2>Covariates</h2>
-  <p class="muted small">x: origin GDP per capita (PPP, log). Bubble area: peak refugee outflow per 1,000 population.</p>
+  <p class="muted small">x: origin GDP per capita (PPP, log). Bubble area: immigrant stock from origin in DK+SE+NL+FI (UN DESA 2024).</p>
   <div class="chart-wrap"><svg id="bubble" role="img" aria-label="Score against origin-country income"></svg></div>
 </section>
 
 <section class="method">
-  <h2>Method</h2>
+<details>
+  <summary><h2>Method</h2></summary>
 
   <h3>1. Data</h3>
   <table class="tbl">
@@ -107,25 +108,28 @@
       <tr><td>Host pairs: DK–SE / DK–FI / FI–SE</td><td>0.76 / 0.83 / 0.59</td></tr>
     </tbody>
   </table>
+</details>
 </section>
 
 <section class="sources">
-  <h2>Sources</h2>
+<details>
+  <summary><h2>Sources</h2></summary>
   <ul>
     <li>Denmark: Finansministeriet (2023), <a href="https://fm.dk/media/5cnhiydz/indvandreres-nettobidrag-til-de-offentlige-finanser-i-2019_revideret-september-2023-a.pdf">Indvandreres nettobidrag til de offentlige finanser i 2019</a>, Fig. 2.11</li>
     <li>Sweden: Konjunkturinstitutet (2025), <a href="https://www.konj.se/media/kpgnt5iw/specialstudie-117-invandrades-nettobidrag-till-de-offentliga-finanserna-1983-2022.pdf">Specialstudie 117</a>, Tabell 8</li>
     <li>Netherlands: van de Beek et al. (2024), <a href="https://docs.iza.org/dp17569.pdf">IZA DP 17569</a>, Table 4</li>
     <li>Finland: Salminen / Suomen Perusta (2019), <a href="https://suomenperusta.substack.com/p/the-fiscal-effects-of-immigration">The Fiscal Effects of Immigration in Finland</a></li>
     <li>UK (validation): HMRC (2022), <a href="https://www.gov.uk/government/statistics/income-tax-national-insurance-contributions-tax-credits-and-child-benefit-statistics-for-non-uk-nationals-2019-to-2020">non-UK nationals 2019–20</a></li>
-    <li>Covariates: <a href="https://data.worldbank.org/">World Bank WDI</a>, <a href="https://www.unhcr.org/refugee-statistics/">UNHCR</a>. Map: <a href="https://www.naturalearthdata.com/">Natural Earth</a></li>
+    <li>Covariates: <a href="https://data.worldbank.org/">World Bank WDI</a>, <a href="https://www.unhcr.org/refugee-statistics/">UNHCR</a>. Immigrant stock: <a href="https://www.un.org/development/desa/pd/content/international-migrant-stock">UN DESA International Migrant Stock 2024</a>. Map: <a href="https://www.naturalearthdata.com/">Natural Earth</a></li>
     <li>Data: <a href="data/net_fiscal_contribution_by_origin_harmonised.xlsx">xlsx</a> · <a href="data/results.json">json</a></li>
   </ul>
+</details>
 </section>
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="data/site-data.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="data/site-data.js?v=4"></script>
+<script src="app.js?v=4"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
 <script defer src="vendor/katex/auto-render.min.js" onload="renderMathInElement(document.querySelector('.method'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
 </body>
