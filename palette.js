@@ -3,17 +3,14 @@
 (function(){
 const LIGHT=['#1f4e9c','#3a86c8','#2e9b4b','#8fc456','#f1d13f','#f5a03a','#ea6a2f','#d1342f','#8e1a1a'];
 const DARK =['#4a7fd4','#5aa8e6','#3cb25c','#9fd065','#f3d651','#f7a94c','#ef7840','#e04a42','#b83030'];
-// Fiscal: the original continuous green -> red ramp (7 stops, best -> worst)
-const G7_LIGHT=['#17753a','#3a9e4f','#86bb45','#d9b92c','#ec8a34','#d9473a','#a11f1f'];
-const G7_DARK =['#2f9e57','#4fb662','#97c955','#e3c443','#f0954a','#e65a4c','#c13a33'];
 const dark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const toHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
 const lum=c=>{const l=c.map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*l[0]+.7152*l[1]+.0722*l[2]};
-// anchors: one value per colour stop (9 by default) in ascending order; good: 'low' if low values are favourable (crime), 'high' if high values are (fiscal); log: interpolate in log space; set: 'g7' for the fiscal green-to-red ramp (anchors must then have 7 values)
-window.PAL={scale(anchors,good,log,set){
+// anchors: one value per colour stop (9 by default) in ascending order; good: 'low' if low values are favourable (crime), 'high' if high values are (fiscal); log: interpolate in log space
+window.PAL={scale(anchors,good,log){
  const f=log?Math.log:x=>x, A=anchors.map(f);
- const stops=()=>{const S=(set==='g7'?(dark()?G7_DARK:G7_LIGHT):(dark()?DARK:LIGHT)).map(hex);return good==='low'?S:S.slice().reverse()};
+ const stops=()=>{const S=(dark()?DARK:LIGHT).map(hex);return good==='low'?S:S.slice().reverse()};
  function rgb(v){const S=stops(),x=f(v);if(x<=A[0])return S[0];const n=A.length-1;if(x>=A[n])return S[n];let i=0;while(x>A[i+1])i++;const k=(x-A[i])/(A[i+1]-A[i]);return S[i].map((c,j)=>c+(S[i+1][j]-c)*k)}
  return {
   col:v=>toHex(rgb(v)),
