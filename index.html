@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Net fiscal contribution of immigrants by origin: harmonised</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="viz-root">
+<header>
+  <h1>Net fiscal contribution of immigrants, by country of origin</h1>
+  <p class="lead">Denmark, Sweden, the Netherlands and Finland put on one scale. Each value is the gap between an origin group and natives, per person per year, as a share of the host country's GDP per capita (Danish single-year basis). Bars show 90% credible intervals.</p>
+</header>
+
+<section>
+  <h2>1. Ranking of origin countries</h2>
+  <p class="note">Zero = natives. 1% of GDP per capita ≈ US$<span id="usd1"></span> per person per year (2023 PPP, average of the four hosts).</p>
+  <label class="toggle"><input type="checkbox" id="showImputed"> Also show the 53 countries that are only estimated (Dutch regional groups or covariates only)</label>
+  <div id="c-rank" class="chart"></div>
+</section>
+
+<section>
+  <h2>2. Same origin, different host country</h2>
+  <p class="note">Published figures after conversion (gap vs natives, % of host GDP per capita), before the model. Countries reported by at least two of DK, SE, FI. Spread across hosts shows how much definitions and cohorts matter.</p>
+  <div id="c-cross" class="chart"></div>
+</section>
+
+<section>
+  <h2>3. What explains the differences</h2>
+  <p class="note">Origin effect against origin-country income and against peak refugee outflow (refugees + asylum seekers per 1,000 population, UNHCR). Countries reported individually by at least one host.</p>
+  <div class="two">
+    <div id="c-gdp" class="chart"></div>
+    <div id="c-ref" class="chart"></div>
+  </div>
+  <div id="c-beta" class="chart"></div>
+</section>
+
+<section>
+  <h2>4. How each study maps onto the common scale</h2>
+  <p class="note">Scale factor λ: how many units of the study's own gap correspond to one unit on the Danish annual scale. The Dutch study is lifetime NPV including children, so its factor is about 35 "year-equivalents".</p>
+  <div class="two">
+    <div id="c-lambda" class="chart"></div>
+    <div id="c-nl" class="chart"></div>
+  </div>
+</section>
+
+<section>
+  <h2>5. Checks</h2>
+  <p class="note">Left: UK HMRC data (income tax + NICs paid minus tax credits + child benefit, per NIC payer, 2019-20) was never used in the model. Right: rank correlation of the origin effects with the main run under alternative specifications.</p>
+  <div class="two">
+    <div id="c-uk" class="chart"></div>
+    <div id="c-sens" class="chart"></div>
+  </div>
+</section>
+
+<section class="method">
+  <h2>Method</h2>
+  <ol>
+    <li><b>Common unit.</b> For each host <i>h</i> and origin <i>c</i>: y = (net contribution of group − natives) ÷ host GDP per capita, same year. Removes currency, price level and host income.</li>
+    <li><b>Model.</b> One latent origin effect θ<sub>c</sub> per country, measured by every study with its own shift and scale:<br>
+      <code>y<sub>i</sub> ~ t<sub>5</sub>( α<sub>h</sub> + λ<sub>h</sub> · mean(θ over countries in group i), σ<sub>h</sub> )</code><br>
+      <code>θ<sub>c</sub> = β<sub>0</sub> + β<sub>1</sub>·log GDPpc<sub>c</sub> + β<sub>2</sub>·log(1+refugees<sub>c</sub>) + β<sub>3</sub>·EU<sub>c</sub> + τ·u<sub>c</sub></code></li>
+    <li><b>Anchor.</b> Denmark: α = 0, λ = 1. Dutch regions measure the average θ of their member countries.</li>
+    <li><b>Estimation.</b> Bayesian (PyMC, NUTS, 4 × 1,500 draws), weakly informative priors. 120 observations; no divergences, R-hat ≤ 1.01.</li>
+    <li><b>Not harmonisable.</b> Lifetime vs annual (absorbed by one factor only), children counted only in NL, age-standardisation only in FI, different years (2011–2022) and arrival cohorts, birth country vs nationality definitions.</li>
+  </ol>
+  <p class="note">Data and full output: <a href="data/net_fiscal_contribution_by_origin_harmonised.xlsx">spreadsheet (xlsx)</a> · <a href="data/results.json">results.json</a></p>
+</section>
+
+<section class="sources">
+  <h2>Sources</h2>
+  <ul>
+    <li>Denmark — Finansministeriet (2023), <a href="https://fm.dk/media/5cnhiydz/indvandreres-nettobidrag-til-de-offentlige-finanser-i-2019_revideret-september-2023-a.pdf">Indvandreres nettobidrag til de offentlige finanser i 2019</a> (revised Sept 2023), Fig. 2.11 and Table B2. 2019, single year.</li>
+    <li>Sweden — Konjunkturinstitutet (2025), <a href="https://www.konj.se/media/kpgnt5iw/specialstudie-117-invandrades-nettobidrag-till-de-offentliga-finanserna-1983-2022.pdf">Specialstudie 117: Invandrades nettobidrag till de offentliga finanserna 1983–2022</a>, Tabell 8. 2022, single year.</li>
+    <li>Netherlands — van de Beek, Hartog, Kreffer, Roodenburg (2024), <a href="https://docs.iza.org/dp17569.pdf">IZA DP 17569</a>, Table 4. Lifetime, 2016 data.</li>
+    <li>Finland — Suomen Perusta / Salminen (2019), as summarised in <a href="https://suomenperusta.substack.com/p/the-fiscal-effects-of-immigration">The Fiscal Effects of Immigration in Finland</a>. 2011 data, ages 20–62. Think tank, not official.</li>
+    <li>UK (check only) — HMRC (2022), <a href="https://www.gov.uk/government/statistics/income-tax-national-insurance-contributions-tax-credits-and-child-benefit-statistics-for-non-uk-nationals-2019-to-2020">Income Tax, NICs, tax credits and Child Benefit statistics for non-UK nationals 2019-20</a>.</li>
+    <li>Covariates and conversion — <a href="https://data.worldbank.org/">World Bank WDI</a> (GDP per capita PPP, deflators, PPP factors); <a href="https://www.unhcr.org/refugee-statistics/">UNHCR Refugee Data Finder</a> (refugees and asylum seekers by origin, 1995–2019).</li>
+  </ul>
+</section>
+<footer>Prepared November 2026. Danish country values digitised from the PDF's vector chart (±0.3k DKK).</footer>
+</main>
+<div id="tip" class="tip" hidden></div>
+<script src="data/results.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
