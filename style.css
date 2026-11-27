@@ -18,7 +18,7 @@ section{margin-top:56px}
 em.neg{color:var(--neg);font-style:normal}em.pos{color:var(--pos);font-style:normal}
 .explain{background:var(--surface-2);border-radius:16px;padding:22px 22px 18px}
 .explain p{margin:14px 0 0;max-width:760px}
-.scale-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--r3),var(--r2),var(--r1),var(--z),var(--b1),var(--b2),var(--b3))}
+.scale-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,#a11f1f,#d9473a,#ec8a34,#d9b92c,#86bb45,#3a9e4f,#17753a)}
 .scale-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-top:6px;gap:8px}
 .scale-labels span:nth-child(2){text-align:center}.scale-labels span:last-child{text-align:right}
 .sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
@@ -94,7 +94,6 @@ details[open]>summary{margin-bottom:10px}
 .tabs a{text-decoration:none;color:var(--ink-2);font-weight:600;font-size:15px;padding:7px 18px;border-radius:9px}
 .tabs a.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .tab>.hero{margin-top:0}
-.scale-bar.rev{background:linear-gradient(90deg,var(--b3),var(--b2),var(--b1),var(--z),var(--r1),var(--r2),var(--r3))}
 .seg.wrap{flex-wrap:wrap}
 .minis{margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);column-gap:28px}
 .mini{display:grid;grid-template-columns:86px 1fr 48px;gap:10px;align-items:center;font-size:13px;padding:3px 0}
@@ -111,3 +110,6 @@ details[open]>summary{margin-bottom:10px}
 .method ul{padding-left:18px;max-width:820px}.method li{margin:4px 0}
 @media (max-width:720px){.minis{grid-template-columns:1fr}.tabs a{padding:7px 14px}.heat{font-size:12px}.heat td{min-width:40px}}
 @media (max-width:720px){#c-list .axis .t span.odd{display:none}}
+.legend .gbar{display:inline-flex;flex-direction:column;gap:2px;min-width:200px}
+.legend .gbar b{display:block;height:10px;border-radius:5px}
+.legend .gbar .gl{display:flex;justify-content:space-between;font-size:12px}

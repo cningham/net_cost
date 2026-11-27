@@ -6,7 +6,7 @@
 <title>Immigrants by country of origin: fiscal contribution and crime</title>
 <meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland) and recorded crime (nine official sources), combined with Bayesian models.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <div class="viz-root">
@@ -135,7 +135,7 @@
 
 <section class="explain">
   <div class="scale" aria-hidden="true">
-    <div class="scale-bar rev"></div>
+    <div class="scale-bar"></div>
     <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
   </div>
   <p><b>Rate ratio</b> = recorded offending rate of the origin group / natives, same host, adjusted for age and sex. 2.0 = twice the native rate.</p>
@@ -182,12 +182,12 @@
   <div class="sec-head">
     <h2>UK: by ethnicity</h2>
     <div class="seg" id="c-ukLevel" role="group" aria-label="Ethnic groups">
-      <button data-l="agg" class="on">6 groups</button><button data-l="det">19 groups</button>
+      <button data-l="agg" class="on">Broad</button><button data-l="det">Detailed</button>
     </div>
   </div>
   <p class="muted small">England and Wales, arrests 2021/22–2023/24, vs White British, adjusted for age and sex. Ethnicity, not origin. Separate from the model above.</p>
   <div class="heat-wrap"><table class="heat" id="c-uk"></table></div>
-  <p class="muted small" id="c-ukNote"></p>
+  <p class="muted small">Merged where police and Census split groups differently: Black (African, Caribbean, other); Mixed White and Black; Roma into Other White; Arab into Other. White other = Irish, Gypsy or Irish Traveller, Roma, other White.</p>
 </section>
 
 <section class="method">
@@ -245,7 +245,7 @@
 
   <h3>8. UK ethnicity</h3>
   <div class="eqs"><div class="eq">$$\text{RR}_g=\frac{O_g}{\sum_{s,b}P_{g,s,b}\,r_{\text{WB},s,b}\,A_{g,s}/A_{\text{WB},s}}$$</div></div>
-  <p class="small">\(b\): age 10–17, 18–20, 21+. \(A\): adult age index from single-year Census ages (21+). Arrests, not convictions. Ethnicity not stated for ~20% of arrests. Population fixed at Census 2021.</p>
+  <p class="small">\(b\): age 10–17, 18–20, 21+. \(A\): adult age index from single-year Census ages (21+). Arrests, not convictions. Ethnicity not stated for ~20% of arrests. Population fixed at Census 2021. Groups merged where police self-definition and Census categories do not match one-to-one; no group shown on its own where that happens.</p>
 </details>
 </section>
 
@@ -271,10 +271,11 @@
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="data/site-data.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="data/crime-data.js?v=6"></script>
-<script src="crime.js?v=6"></script>
+<script src="palette.js?v=7"></script>
+<script src="data/site-data.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="data/crime-data.js?v=7"></script>
+<script src="crime.js?v=7"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
 <script defer src="vendor/katex/auto-render.min.js" onload="document.querySelectorAll('.method').forEach(m=>renderMathInElement(m,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]}))"></script>
 </body>
