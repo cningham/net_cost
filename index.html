@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Immigrants by country of origin: fiscal contribution and crime</title>
-<meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland) and recorded crime (nine official sources), combined with Bayesian models.">
+<meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland), recorded crime (nine official sources), and the two combined per person, with Bayesian models.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 <div class="viz-root">
 <nav class="tabs" role="tablist" aria-label="Topic">
-  <a href="#fiscal" role="tab" data-tab="fiscal" class="on">Fiscal</a><a href="#crime" role="tab" data-tab="crime">Crime</a>
+  <a href="#fiscal" role="tab" data-tab="fiscal" class="on">Fiscal</a><a href="#crime" role="tab" data-tab="crime">Crime</a><a href="#net" role="tab" data-tab="net">Fiscal + crime</a>
 </nav>
 <main id="tab-fiscal" class="tab">
 
@@ -264,14 +264,121 @@
 </details>
 </section>
 </main>
+<main id="tab-net" class="tab" hidden>
+<header class="hero">
+  <h1>Fiscal contribution and crime cost of immigrants by country of origin</h1>
+</header>
+
+<section class="explain">
+  <div class="scale" aria-hidden="true">
+    <div class="scale-bar"></div>
+    <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
+  </div>
+  <p><b>Net</b> = fiscal score − excess cost of crime, per person per year, vs natives. Both as a share of host GDP per capita, or in US$ (PPP, 2023).</p>
+</section>
+
+<section class="controls">
+  <div class="ctl"><span class="muted small">Crime costs</span><div class="seg" id="n-basis" role="group" aria-label="Crime cost basis"><button data-v="all" class="on">All social costs</button><button data-v="pub">Public spending only</button></div></div>
+  <div class="ctl"><span class="muted small">Weight</span><div class="seg" id="n-w" role="group" aria-label="Crime cost weight"><button data-v="0">×0</button><button data-v="0.5">×½</button><button data-v="1" class="on">×1</button><button data-v="2">×2</button></div></div>
+  <div class="ctl"><span class="muted small">Unit</span><div class="seg" id="n-unit" role="group" aria-label="Unit"><button data-v="usd" class="on">US$</button><button data-v="pct">% GDP pc</button></div></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Map</h2>
+    <div class="seg" id="n-zoom" role="group" aria-label="Map zoom">
+      <button data-view="world" class="on">World</button><button data-view="eu">Europe &amp; Middle East</button>
+    </div>
+  </div>
+  <div class="map-wrap"><svg id="n-map" class="map" role="img" aria-label="World map of net contribution"></svg></div>
+  <div class="legend" id="n-legend"></div>
+  <div class="card" id="n-detail"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Fiscal to net</h2>
+    <input id="n-search" type="search" placeholder="Search" aria-label="Search country">
+  </div>
+  <p class="muted small">Ring: fiscal. Dot: net after crime. Bar: 90% credible interval of net. <label class="chk"><input type="checkbox" id="n-showEst"> show modelled</label></p>
+  <div id="n-list" class="list dumb"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Table</h2>
+    <input id="n-tsearch" type="search" placeholder="Search" aria-label="Search country in table">
+  </div>
+  <p class="muted small"><span class="n-unitlab">US$ per person per year</span>. Click a header to sort. Immigrants: stock in DK+SE+NL+FI (UN DESA 2024). Total: net × immigrants, per year.</p>
+  <div class="tbl-wrap"><table class="tbl sort" id="n-table"></table></div>
+</section>
+
+<section>
+  <h2>By region</h2>
+  <p class="muted small">Averages weighted by immigrant stock; origins with a stock figure only.</p>
+  <div class="tbl-wrap"><table class="tbl sort" id="n-reg"></table></div>
+</section>
+
+<section>
+  <h2>Crime cost weights</h2>
+  <p class="muted small">Cost of crime per head of population per year, England and Wales 2019/20, as a share of GDP per head and applied to each host. Untick a type to drop it.</p>
+  <div class="tbl-wrap"><table class="tbl" id="n-wt"></table></div>
+</section>
+
+<section>
+  <h2>Not captured</h2>
+  <ul class="small notlist">
+    <li>Age structure. Crime ratios are adjusted for age and sex; fiscal scores are not. Young, male inflows offend more than the adjusted ratio implies.</li>
+    <li>Second generation. Fiscal and most crime sources count the first generation only.</li>
+    <li>Recorded crime. Ratios are of suspects or convictions; costs are of all crime, reported or not. Offences per offender assumed equal across groups.</li>
+    <li>Victims. Cost per offence is the England and Wales average, whoever the victim.</li>
+    <li>Drugs, public order, traffic, weapons: no unit costs; left out.</li>
+    <li>Overlap. Police and justice spending is partly inside the fiscal accounts as an average per head.</li>
+    <li>Other effects: wages, prices, housing, innovation, remittances, integration over time.</li>
+  </ul>
+</section>
+
+<section class="method">
+<details>
+  <summary><h2>Method</h2></summary>
+  <h3>1. Net</h3>
+  <div class="eqs"><div class="eq">$$N_c=F_c-w\sum_k s_k\left(\text{RR}_{ck}-1\right)$$</div></div>
+  <p class="small">\(F_c\): fiscal score of origin \(c\) (fiscal tab). \(\text{RR}_{ck}\): modelled rate ratio for crime \(k\) (crime tab). \(s_k\): cost of crime \(k\) per head of population per year, % of GDP per head. \(w\): weight. US$ = % × average host GDP per capita / 100.</p>
+  <h3>2. Cost of crime per head</h3>
+  <div class="eqs"><div class="eq">$$s_k=\frac{\sum_{j\in k}u_j\,n_j}{\text{Pop}\cdot\text{GDP per head}}$$</div></div>
+  <p class="small">\(u_j\): Home Office unit cost of offence \(j\); \(n_j\): offences in England and Wales 2019/20, reported and unreported (CSEW, Commercial Victimisation Survey, Homicide Index). Pop 59.44m, GDP per head £33,400. All social costs: anticipation, consequence, response. Public spending: police, criminal justice, health, victim services.</p>
+  <p class="small">Mapping: violence ← violence with and without injury; rape ← rape; sexual ← other sexual offences; robbery ← personal and commercial; property ← burglary and criminal damage; theft ← vehicle, personal and commercial theft; fraud ← fraud and cybercrime.</p>
+  <h3>3. Uncertainty</h3>
+  <div class="eqs"><div class="eq">$$F_c\sim\mathcal N(\bar F_c,\,\sigma_{F,c})$$</div><div class="eq">$$\log\text{RR}_{ck}=\mu_{ck}+\tau_{ck}\left(\sqrt{0.8}\,z_c+\sqrt{0.2}\,e_{ck}\right)$$</div></div>
+  <p class="small">\(\sigma\), \(\tau\) from the published 90% and 95% intervals. Crime types correlated within an origin (shared origin effect in the crime model); fiscal independent of crime. 2,000 draws. Modelled: either input modelled.</p>
+  <h3>4. Coverage</h3>
+  <p class="small">93 origins in both models.</p>
+</details>
+</section>
+
+<section class="sources">
+<details>
+  <summary><h2>Sources</h2></summary>
+  <ul>
+    <li>Fiscal scores: fiscal tab (Denmark, Sweden, Netherlands, Finland)</li>
+    <li>Rate ratios: crime tab (nine official sources)</li>
+    <li>Unit costs and volumes: Home Office (2023), <a href="https://www.gov.uk/government/publications/economic-and-social-costs-of-crime-2019-to-2020/economic-and-social-costs-of-crime-2019-to-2020">Economic and social costs of crime 2019 to 2020</a>, Tables 3–4; method: Heeks et al. (2018), <a href="https://www.gov.uk/government/publications/the-economic-and-social-costs-of-crime">HORR99</a></li>
+    <li>Population and GDP: ONS mid-2019 population estimates; ONS GDP 2019/20</li>
+    <li>Immigrant stock: <a href="https://www.un.org/development/desa/pd/content/international-migrant-stock">UN DESA International Migrant Stock 2024</a>. Map: <a href="https://www.naturalearthdata.com/">Natural Earth</a></li>
+  </ul>
+</details>
+</section>
+</main>
+
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="palette.js?v=15"></script>
-<script src="data/site-data.js?v=15"></script>
-<script src="app.js?v=15"></script>
-<script src="data/crime-data.js?v=15"></script>
-<script src="crime.js?v=15"></script>
+<script src="palette.js?v=16"></script>
+<script src="data/site-data.js?v=16"></script>
+<script src="app.js?v=16"></script>
+<script src="data/crime-data.js?v=16"></script>
+<script src="net.js?v=16"></script>
+<script src="crime.js?v=16"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
 <script defer src="vendor/katex/auto-render.min.js" onload="document.querySelectorAll('.method').forEach(m=>renderMathInElement(m,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]}))"></script>
 </body>
