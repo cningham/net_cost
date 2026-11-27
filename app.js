@@ -81,7 +81,7 @@ $('search').addEventListener('input',list);$('showEst').addEventListener('change
 // ---------- BUBBLE ----------
 function bubble(){
  const svg=$('bubble');svg.innerHTML='';const narrow=svg.parentNode.clientWidth<600;
- const BW=narrow?400:980,BH=narrow?440:430,L=narrow?46:54,R=14,T=narrow?62:70,B=50;svg.setAttribute('viewBox',`0 0 ${BW} ${BH}`);
+ const BW=narrow?400:980,BH=narrow?600:620,L=narrow?46:54,R=14,T=narrow?62:70,B=50;svg.setAttribute('viewBox',`0 0 ${BW} ${BH}`);
  const lx=v=>L+(Math.log10(v)-3)/2*(BW-L-R),ly=v=>T+(28-v)/72*(BH-T-B);
  const gr=el('g',{class:'grid'},svg);
  [-40,-20,0,20].forEach(t=>{el('line',{x1:L,x2:BW-R,y1:ly(t),y2:ly(t),style:t===0?`stroke:${css('--mid')};stroke-width:1.5`:null},gr);const tx=el('text',{x:L-8,y:ly(t)+4,'text-anchor':'end'},svg);tx.textContent=(t>0?'+':'')+t+'%'});
@@ -93,7 +93,7 @@ function bubble(){
  const LAB=new Set(narrow?['SOM','SYR','IND','USA','PAK','IRQ','GBR']:['SOM','SYR','IRQ','AFG','ERI','IND','USA','GBR','CHN','MAR','IRN','TUR','PAK','POL']);
  pts.forEach(o=>{const cx=lx(Math.max(1000,o.gdp)),cy=ly(o.mean),c=colorOf(o.mean),r=rr(o.mig);
   const g=el('g',{},svg);el('circle',{cx,cy,r,fill:c,'fill-opacity':.88,stroke:css('--surface'),'stroke-width':1.5},g);
-  if(LAB.has(o.iso)){const off={GBR:-13,USA:15,IRN:-12,BIH:6}[o.iso]||0;const right=cx>BW-150||o.iso==='ERI';const t=el('text',{x:right?cx-r-4:cx+r+4,y:cy+4+off,'text-anchor':right?'end':'start',style:`fill:${css('--ink')}`},g);t.textContent=o.name}
+  if(LAB.has(o.iso)){const off={GBR:-13,USA:24,IRN:-12,BIH:6}[o.iso]||0;const right=cx>BW-150||o.iso==='ERI';const t=el('text',{x:right?cx-r-4:cx+r+4,y:cy+4+off,'text-anchor':right?'end':'start',style:`fill:${css('--ink')}`},g);t.textContent=o.name}
   g.style.cursor='pointer';
   g.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>origin income $${o.gdp.toLocaleString('en-US')}<br>immigrants in DK+SE+NL+FI: ${o.mig.toLocaleString('en-US')}`));
   g.addEventListener('mouseleave',hideTip);g.addEventListener('click',()=>select(o));});
