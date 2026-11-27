@@ -20,10 +20,8 @@ function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const w=tip.offsetW
 function hideTip(){tip.hidden=true}
 function detail(o){
  const est=o.ev===EST;
- const who=est?'Modelled (regional group + covariates).'
-   :'Measured: '+o.hosts.split(',').map(h=>HOST[h]).join(', ');
  $('detail').innerHTML=`<div class="row"><h3>${o.name.replace(' (unspecified)','')}</h3><span class="val" style="color:${inkOf(o.mean)}">${sgn(o.mean)}</span><span class="muted">≈ ${money(o.usd)} / person / year</span></div>
- <div class="muted small">90% CrI ${sgn(o.lo)} to ${sgn(o.hi)} · rank ${o.rk}/${O.length} · ${who}</div>`;
+ <div class="muted small">90% CrI ${sgn(o.lo)} to ${sgn(o.hi)} · rank ${o.rk}/${O.length}${est?' · modelled':''}</div>`;
 }
 
 // ---------- MAP ----------
