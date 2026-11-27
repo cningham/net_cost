@@ -7,11 +7,10 @@ const $=id=>document.getElementById(id);
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a){if(a[k]!=null)e.setAttribute(k,a[k])}if(p)p.appendChild(e);return e}
 const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(Math.abs(v)<10?1:0)+'%';
 const money=v=>(v<0?'−':'+')+'US$'+Math.abs(Math.round(v/100)*100).toLocaleString('en-US');
-$('usd10').textContent=(Math.round(D.avg_usd*0.1/100)*100).toLocaleString('en-US');
 const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
 // continuous green (above natives) -> red (below natives)
-const SC=PAL.scale([-40,-30,-20,-12,-5,0,5,12,22],'high',false);
+const SC=PAL.scale([-40,-30,-20,-12,-5,0,5,12,22],'high',false,'rg');
 const colorOf=v=>SC.col(v);
 const inkOf=v=>SC.ink(v);
 const pfmt=a=>(a>0?'+':a<0?'−':'')+Math.abs(a)+'%';
