@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Net fiscal contribution of immigrants by country of origin</title>
-<meta name="description" content="Net fiscal contribution by country of origin: Denmark, Sweden, Netherlands and Finland combined with a Bayesian measurement model.">
+<title>Immigrants by country of origin: fiscal contribution and crime</title>
+<meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland) and recorded crime (nine official sources), combined with Bayesian models.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <div class="viz-root">
+<nav class="tabs" role="tablist" aria-label="Topic">
+  <a href="#fiscal" role="tab" data-tab="fiscal" class="on">Fiscal</a><a href="#crime" role="tab" data-tab="crime">Crime</a>
+</nav>
+<main id="tab-fiscal" class="tab">
 
 <header class="hero">
   <h1>Net fiscal contribution of immigrants by country of origin</h1>
   <p class="lead">Denmark, Sweden, Netherlands and Finland, combined into one score per origin country.</p>
-  <div class="tiles">
-    <div class="tile"><span class="big">50 + 53</span><span>origins measured + modelled</span></div>
-    <div class="tile"><span class="big"><em class="neg">−39%</em> to <em class="pos">+22%</em></span><span>Somalia to United Kingdom</span></div>
-  </div>
 </header>
 
 <section class="explain">
@@ -125,12 +125,157 @@
   </ul>
 </details>
 </section>
+</main>
+
+<main id="tab-crime" class="tab" hidden>
+<header class="hero">
+  <h1>Recorded crime of immigrants by country of origin</h1>
+  <p class="lead">Denmark, Norway, Finland, the Netherlands, Germany, Switzerland, Spain and the Basque Country, combined into one rate ratio per origin and crime type.</p>
+</header>
+
+<section class="explain">
+  <div class="scale" aria-hidden="true">
+    <div class="scale-bar rev"></div>
+    <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
+  </div>
+  <p><b>Rate ratio</b> = recorded offending rate of the origin group / natives, same host, adjusted for age and sex. 2.0 = twice the native rate.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Crime type</h2>
+  </div>
+  <div class="seg wrap" id="c-crime" role="group" aria-label="Crime type"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Map</h2>
+    <div class="seg" id="c-zoom" role="group" aria-label="Map zoom">
+      <button data-view="world" class="on">World</button><button data-view="eu">Europe &amp; Middle East</button>
+    </div>
+  </div>
+  <div class="map-wrap"><svg id="c-map" role="img" aria-label="World map of crime rate ratios"></svg></div>
+  <div class="legend" id="c-legend"></div>
+  <div class="card" id="c-detail"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Ranking</h2>
+    <input id="c-search" type="search" placeholder="Search" aria-label="Search country">
+  </div>
+  <p class="muted small">Dot: posterior median. Bar: 95% credible interval. Log scale. <label class="chk"><input type="checkbox" id="c-showEst"> show modelled</label></p>
+  <div id="c-list" class="list"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>By crime type</h2>
+    <label class="chk small"><input type="checkbox" id="c-heatAll"> all origins</label>
+  </div>
+  <p class="muted small">Rate ratio vs natives. Sorted by all offences. Measured origins only. Faded: no data for that crime type, pooled from the others.</p>
+  <div class="heat-wrap"><table class="heat" id="c-heat"></table></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>UK: by ethnicity</h2>
+    <div class="seg" id="c-ukLevel" role="group" aria-label="Ethnic groups">
+      <button data-l="agg" class="on">6 groups</button><button data-l="det">19 groups</button>
+    </div>
+  </div>
+  <p class="muted small">England and Wales, arrests 2021/22–2023/24, vs White British, adjusted for age and sex. Ethnicity, not origin. Separate from the model above.</p>
+  <div class="heat-wrap"><table class="heat" id="c-uk"></table></div>
+  <p class="muted small" id="c-ukNote"></p>
+</section>
+
+<section class="method">
+<details>
+  <summary><h2>Method</h2></summary>
+
+  <h3>1. Data</h3>
+  <table class="tbl">
+    <thead><tr><th>Host <i>h</i></th><th>Years</th><th>Stage</th><th>Origin</th><th>Age-sex</th></tr></thead>
+    <tbody>
+      <tr><td>Denmark</td><td>2022–24</td><td>Convicted</td><td>Country of origin incl. descendants</td><td>Indirect</td></tr>
+      <tr><td>Norway</td><td>2022–24</td><td>Sanctioned, residents</td><td>Citizenship</td><td>Indirect</td></tr>
+      <tr><td>Finland</td><td>2022–24</td><td>Suspects</td><td>Born abroad, 10 world sub-regions</td><td>Indirect</td></tr>
+      <tr><td>Netherlands</td><td>2023–24</td><td>Suspects, residents</td><td>Citizenship (~90)</td><td>Indirect</td></tr>
+      <tr><td>Netherlands</td><td>2020–22</td><td>Suspects</td><td>Background incl. 2nd generation (4)</td><td>Indirect</td></tr>
+      <tr><td>Germany</td><td>2025</td><td>Suspects, incl. non-residents</td><td>Citizenship (23)</td><td>Factor, all non-Germans</td></tr>
+      <tr><td>Switzerland</td><td>2023–25</td><td>Accused, residents</td><td>Citizenship (38)</td><td>Indirect</td></tr>
+      <tr><td>Spain</td><td>2023–25</td><td>Offences convicted</td><td>Citizenship, 5 world regions</td><td>Factor per region</td></tr>
+      <tr><td>Basque Country</td><td>Jan–Sep 2025</td><td>Detained + investigated</td><td>Place of birth, 4 world regions</td><td>Factor per region</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Crime types: all offences (excl. traffic), violence, homicide (incl. attempts), sexual, rape, robbery, property, theft, fraud, drugs. 1,884 observations, 114 origins.</p>
+
+  <h3>2. Common unit</h3>
+  <div class="eqs"><div class="eq">$$E_{gk}=\sum_{a,s}P_{g,a,s}\,r^{\text{ref}}_{k,a,s}$$</div><div class="eq">$$y_{ghk}=\log\frac{O_{gk}/E_{gk}}{O_{\text{nat},k}/E_{\text{nat},k}}$$</div></div>
+  <div class="eqs"><div class="eq">$$\text{se}_{ghk}=\sqrt{\frac{1}{O_{gk}}+\frac{1}{O_{\text{nat},k}}}$$</div><div class="eq">$$\text{RR}^{\text{adj}}=\text{RR}^{\text{crude}}\cdot\frac{\text{SIR}_g}{\text{crude}_g}$$</div></div>
+  <p class="small">\(O\): offenders (or offences) of group \(g\), crime \(k\), host \(h\). \(P\): population by age \(a\) and sex \(s\). \(r^{\text{ref}}\): native or national rate. Second form where only crude counts by crime exist: factor from total offending.</p>
+
+  <h3>3. Model</h3>
+  <div class="eqs"><div class="eq">$$y_{ghk}\sim t_5\!\left(\alpha_{hk}+s_h\log\sum_c W_{gc}\,e^{\theta_{ck}},\ \sqrt{\text{se}^2+\sigma_h^2+\mathbb 1_{\text{grp}}\sigma_{\text{grp}}^2}\right)$$</div></div>
+  <div class="eqs"><div class="eq">$$\theta_{ck}=b_k+\lambda_k\,g_c+\varepsilon_{ck}$$</div><div class="eq">$$g_c=\beta_1 z^{\text{gdp}}_c+\beta_2 z^{\text{ref}}_c+\beta_3\,\text{EU}_c+\rho_{r(c)}+\eta_c$$</div></div>
+  <p class="small">\(W_{gc}\): 1 for a country; assumed shares of migrant stock for a regional group (Finland, Spain, Basque Country). \(\alpha_{hk}=a_h+d_{hk}\): host and host × crime level (stage, definitions). \(s_h\): host spread. \(\lambda_{\text{ALL}}=1\). \(\rho\): 7 world regions. Covariates as in the fiscal tab.</p>
+  <p class="small">Identification: \(\sum_h a_h=0,\ \sum_h d_{hk}=0,\ \sum_h\log s_h=0,\ \sum_r\rho_r=0\). Modelled rate ratio \(=e^{\theta_{ck}}\): an average host among the nine.</p>
+  <p class="small">Priors: \(b_k,\beta\sim\mathcal N(0,1)\); \(\lambda_k\sim\text{LogNormal}(0,0.5)\); \(\sigma_\rho,\sigma_\eta,\sigma_a\sim\mathcal N^+(0,0.5)\); \(\sigma_\varepsilon,\sigma_d,\sigma_h,\sigma_{\text{grp}}\sim\mathcal N^+(0,0.3)\). NUTS, 4 chains × 1,000 draws, \(\hat R\le1.01\), 0 divergences.</p>
+  <p class="small">Modelled: origins measured only inside a regional group, inferred from the group and covariates.</p>
+
+  <h3>4. Estimates</h3>
+  <table class="tbl" id="c-est"></table>
+  <h3>5. Host levels</h3>
+  <p class="small muted">\(e^{\alpha_{hk}}\): what each host records relative to the average host, all offences.</p>
+  <table class="tbl" id="c-alpha"></table>
+
+  <h3>6. Validation (Spearman ρ, all offences)</h3>
+  <table class="tbl" id="c-sens"></table>
+
+  <h3>7. Not harmonised</h3>
+  <ul class="small">
+    <li>Socio-economic status. Age and sex only (Sweden: crude 2.4 → 1.8 after income, education, area).</li>
+    <li>Naturalisation. Citizenship hosts count naturalised migrants as natives.</li>
+    <li>Non-residents. German suspects include travelling offenders.</li>
+    <li>Reporting and policing. Recorded crime, not offending.</li>
+    <li>Ethnicity. Country of origin is not ethnicity (e.g. stateless Palestinians under Kuwait, Lebanon).</li>
+    <li>Sweden, France, Austria: no rates by origin and crime; not included.</li>
+  </ul>
+
+  <h3>8. UK ethnicity</h3>
+  <div class="eqs"><div class="eq">$$\text{RR}_g=\frac{O_g}{\sum_{s,b}P_{g,s,b}\,r_{\text{WB},s,b}\,A_{g,s}/A_{\text{WB},s}}$$</div></div>
+  <p class="small">\(b\): age 10–17, 18–20, 21+. \(A\): adult age index from single-year Census ages (21+). Arrests, not convictions. Ethnicity not stated for ~20% of arrests. Population fixed at Census 2021.</p>
+</details>
+</section>
+
+<section class="sources">
+<details>
+  <summary><h2>Sources</h2></summary>
+  <ul>
+    <li>Denmark: Statistics Denmark, <a href="https://www.statbank.dk/STRAFNA4">STRAFNA4</a>, STRAFNA3, FOLK1C</li>
+    <li>Norway: Statistics Norway, <a href="https://www.ssb.no/en/statbank/table/13734">13734</a>, 13731, 05196</li>
+    <li>Finland: Statistics Finland, <a href="https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__rpk/statfin_rpk_pxt_13z4.px">13z4</a></li>
+    <li>Netherlands: CBS, <a href="https://opendata.cbs.nl/statline/#/CBS/nl/dataset/85656NED">85656</a>, <a href="https://opendata.cbs.nl/statline/#/CBS/nl/dataset/81947NED">81947</a>, 86081, 85510</li>
+    <li>Germany: BKA, <a href="https://www.bka.de/DE/AktuelleInformationen/StatistikenLagebilder/PolizeilicheKriminalstatistik/pks_node.html">PKS 2025</a> T62, T40, T50; Destatis Ausländerzentralregister</li>
+    <li>Switzerland: BFS, <a href="https://www.bfs.admin.ch/bfs/en/home/statistics/crime-criminal-justice/police.html">Polizeiliche Kriminalstatistik</a></li>
+    <li>Spain: INE, <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=49050">49050</a>, 25645, population estimates</li>
+    <li>Basque Country: Ertzaintza, detenciones e investigaciones por lugar de nacimiento (2025)</li>
+    <li>UK: Home Office, <a href="https://www.gov.uk/government/statistics/stop-and-search-arrests-and-mental-health-detentions-march-2026">arrests open data</a>; ONS, <a href="https://www.ons.gov.uk/census">Census 2021</a></li>
+    <li>Context, not modelled: Brå (2021) <a href="https://bra.se/">2021:8</a>; INSEE (2023) Immigrés et descendants; Statistik Austria</li>
+    <li>Data: <a href="data/crime_by_origin_harmonised.xlsx">xlsx</a> · <a href="data/crime_results.json">json</a></li>
+  </ul>
+</details>
+</section>
+</main>
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="data/site-data.js?v=5"></script>
-<script src="app.js?v=5"></script>
+<script src="data/site-data.js?v=6"></script>
+<script src="app.js?v=6"></script>
+<script src="data/crime-data.js?v=6"></script>
+<script src="crime.js?v=6"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
-<script defer src="vendor/katex/auto-render.min.js" onload="renderMathInElement(document.querySelector('.method'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<script defer src="vendor/katex/auto-render.min.js" onload="document.querySelectorAll('.method').forEach(m=>renderMathInElement(m,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]}))"></script>
 </body>
 </html>
