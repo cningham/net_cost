@@ -1,0 +1,28 @@
+.viz-root{color-scheme:light;--surface-1:#ffffff;--text-primary:#191919;--text-secondary:#666666;--grid:#e6e6e6;--axis:#bdbdbd;
+--pos:#257de0;--neg:#ec4647;--mid:#9c9c9c;--s1:#257de0;--s2:#f47230;--s3:#00b894;--band:#efefef}
+@media (prefers-color-scheme:dark){.viz-root{color-scheme:dark;--surface-1:#191919;--text-primary:#efefef;--text-secondary:#9c9c9c;--grid:#2e2e2e;--axis:#555;
+--pos:#338ced;--neg:#eb6263;--mid:#7a7a7a;--s1:#338ced;--s2:#e76624;--s3:#00a888;--band:#2a2a2a}
+body{background:#191919}}
+body{margin:0;background:#fff;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.viz-root{max-width:980px;margin:0 auto;padding:32px 20px 48px;color:var(--text-primary);background:var(--surface-1)}
+h1{font-size:26px;line-height:1.2;margin:0 0 8px}
+h2{font-size:18px;margin:40px 0 4px}
+.lead{color:var(--text-secondary);margin:0;max-width:760px}
+.note{color:var(--text-secondary);font-size:13px;margin:2px 0 10px;max-width:780px}
+.toggle{font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.method ol{padding-left:20px;max-width:800px}.method li{margin:6px 0}
+code{font-size:13px;background:var(--band);padding:2px 6px;border-radius:4px;display:inline-block;margin:3px 0}
+.sources ul{padding-left:20px;font-size:14px}.sources li{margin:4px 0}
+a{color:var(--pos)}
+footer{margin-top:40px;font-size:12px;color:var(--text-secondary)}
+.tip{position:fixed;pointer-events:none;background:var(--surface-1,#fff);color:inherit;border:1px solid #ccc;border-radius:6px;padding:6px 9px;font:12px/1.4 system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.15);max-width:260px;z-index:10}
+@media (prefers-color-scheme:dark){.tip{background:#222;color:#efefef;border-color:#444}}
+text{fill:var(--text-primary);font-size:11px}
+.ax text{fill:var(--text-secondary)}
+.ax line,.ax path{stroke:var(--axis)}
+.grid line{stroke:var(--grid)}
+.title{font-size:13px;font-weight:600}
+.lab{fill:var(--text-secondary);font-size:11px}
