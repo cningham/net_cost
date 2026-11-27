@@ -29,10 +29,9 @@ function crimeSeg(){
 }
 function detail(o){
  const r=o.rr[crime];
- const who=isEst(o)?'Modelled (regional group + covariates).':'Measured: '+o.hosts.map(h=>HOST[h]).join(', ');
  const rows=CR.map(([k,n])=>{const v=o.rr[k];const cc=inkOf(v[0]);return `<div class="mini${k===crime?' cur':''}"><span>${n}</span><div class="track"><div class="zero" style="left:${pos(1)}%"></div><div class="ci" style="left:${pos(v[1])}%;width:${pos(v[2])-pos(v[1])}%;background:${cc}"></div><div class="pt" style="left:${pos(v[0])}%;background:${cc}"></div></div><span class="v" style="color:${cc}">${fx(v[0])}</span></div>`}).join('');
  $('c-detail').innerHTML=`<div class="row"><h3>${o.name}</h3><span class="val" style="color:${inkOf(r[0])}">${fx(r[0])}</span><span class="muted">${CN[crime].toLowerCase()} vs natives</span></div>
- <div class="muted small">95% CrI ${fx(r[1])} to ${fx(r[2])} · ${who}${o.note?' · '+o.note:''}</div><div class="minis">${rows}</div>`;
+ <div class="muted small">95% CrI ${fx(r[1])} to ${fx(r[2])}${isEst(o)?' · modelled':''}${o.note?' · '+o.note:''}</div><div class="minis">${rows}</div>`;
 }
 // map
 const W=D.world.w,H=D.world.h,map=$('c-map');
