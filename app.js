@@ -1,142 +1,108 @@
 (function(){
-const D=window.DATA, NS="http://www.w3.org/2000/svg";
-const css=n=>getComputedStyle(document.querySelector('.viz-root')).getPropertyValue(n).trim();
-const tip=document.getElementById('tip');
-function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
-function txt(p,x,y,s,a){const t=el('text',Object.assign({x,y},a||{}),p);t.textContent=s;return t}
-function lin(d0,d1,r0,r1){const f=v=>r0+(v-d0)/(d1-d0)*(r1-r0);f.d=[d0,d1];return f}
-function logs(d0,d1,r0,r1){const a=Math.log10(d0),b=Math.log10(d1);return v=>r0+(Math.log10(v)-a)/(b-a)*(r1-r0)}
-function lbl(g,cx,cy,t,W){const r=cx>W-110;return txt(g,r?cx-7:cx+7,cy-7,t,{class:'lab','text-anchor':r?'end':'start'})}
-function hover(node,html){node.style.cursor='default';
- node.addEventListener('mousemove',e=>{tip.innerHTML=html;tip.hidden=false;const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;tip.style.left=x+'px';tip.style.top=(e.clientY+12)+'px'});
- node.addEventListener('mouseleave',()=>tip.hidden=true)}
-function frame(id,W,H){const c=document.getElementById(id);c.innerHTML='';return el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img'},c)}
-function xAxis(s,x,ticks,y0,y1,fmt,label,W){const g=el('g',{class:'ax'},s),gr=el('g',{class:'grid'},s);
- ticks.forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:y0,y2:y1},gr);txt(g,x(t),y1+14,fmt?fmt(t):t,{'text-anchor':'middle'})});
- if(label)txt(g,(W||0)/2||x(ticks[Math.floor(ticks.length/2)]),y1+30,label,{'text-anchor':'middle'});}
-function yAxis(s,y,ticks,x0,x1,fmt,label){const g=el('g',{class:'ax'},s),gr=el('g',{class:'grid'},s);
- ticks.forEach(t=>{el('line',{x1:x0,x2:x1,y1:y(t),y2:y(t)},gr);txt(g,x0-6,y(t)+4,fmt?fmt(t):t,{'text-anchor':'end'})});
- if(label){const t=txt(g,0,0,label,{'text-anchor':'middle',transform:`translate(${x0-40},${(y(ticks[0])+y(ticks[ticks.length-1]))/2}) rotate(-90)`})}}
-const pct=v=>(v>0?'+':'')+v+'%';
-const col=v=>v<0?css('--neg'):css('--pos');
-const usd=v=>(v<0?'−':'+')+'$'+Math.abs(Math.round(v/100)*100).toLocaleString('en-US');
-document.getElementById('usd1').textContent=Math.round(D.avg_usd/100).toLocaleString('en-US');
-const ring=css('--surface-1');
+const D=window.DATA,NS="http://www.w3.org/2000/svg";
+const O=D.origins, byIso=Object.fromEntries(O.map(o=>[o.iso,o]));
+const EST='regional aggregate / covariates only';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $=id=>document.getElementById(id);
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a){if(a[k]!=null)e.setAttribute(k,a[k])}if(p)p.appendChild(e);return e}
+const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(Math.abs(v)<10?1:0)+'%';
+const money=v=>(v<0?'−':'+')+'US$'+Math.abs(Math.round(v/100)*100).toLocaleString('en-US');
+$('usd10').textContent=(Math.round(D.avg_usd*0.1/100)*100).toLocaleString('en-US');
+const HOST={DNK:'Denmark',SWE:'Sweden',FIN:'Finland',NLD:'Netherlands'};
 
-// 1. ranking
-function rank(){
- const all=document.getElementById('showImputed').checked;
- const rows=D.origins.filter(o=>all||o.ev!=='regional aggregate / covariates only').sort((a,b)=>b.mean-a.mean);
- const L=190,R=60,T=44,rh=15,W=900,H=T+rows.length*rh+40;const s=frame('c-rank',W,H);
- const x=lin(-55,30,L,W-R);const y0=T,y1=T+rows.length*rh;
- xAxis(s,x,[-50,-40,-30,-20,-10,0,10,20,30],y0-6,y1,pct);
- el('line',{x1:x(0),x2:x(0),y1:y0-6,y2:y1,stroke:css('--mid'),'stroke-width':1.5},s);
- txt(s,x(0)+4,y0-9,'natives',{class:'lab'});
- txt(s,L,16,'Origin effect, % of host GDP per capita per person per year (mean and 90% interval)',{class:'title'});
- rows.forEach((o,i)=>{const cy=T+i*rh+rh/2,c=col(o.mean),imp=o.ev==='regional aggregate / covariates only';
-  const g=el('g',{},s);
-  el('rect',{x:0,y:cy-rh/2,width:W,height:rh,fill:'transparent'},g);
-  txt(g,L-8,cy+4,o.name+(imp?' *':''),{'text-anchor':'end',fill:imp?css('--text-secondary'):css('--text-primary')});
-  el('line',{x1:x(o.lo),x2:x(o.hi),y1:cy,y2:cy,stroke:c,'stroke-width':2,'stroke-linecap':'round',opacity:imp?.45:.9},g);
-  el('circle',{cx:x(o.mean),cy,r:4.5,fill:imp?ring:c,stroke:imp?c:ring,'stroke-width':imp?1.5:2},g);
-  hover(g,`<b>${o.name}</b><br>${pct(o.mean)} of GDP pc (90%: ${o.lo} to ${o.hi})<br>≈ ${usd(o.usd)} PPP per person per year<br>Rank ${o.rk} (90%: ${o.rlo}–${o.rhi}) of ${D.origins.length}<br>Evidence: ${o.ev}${o.hosts?' ('+o.hosts+')':''}`);
- });
- if(all)txt(s,L,H-6,'* estimated only: appears inside Dutch regional groups or predicted from covariates',{class:'lab'});
+// binned diverging colour, equal arms (3 red, neutral, 3 blue)
+const BINS=[[-Infinity,-20,'--r3','below −20%'],[-20,-10,'--r2','−20 to −10%'],[-10,-3,'--r1','−10 to −3%'],[-3,3,'--z','±3% (like natives)'],[3,10,'--b1','+3 to +10%'],[10,20,'--b2','+10 to +20%'],[20,Infinity,'--b3','above +20%']];
+const colorOf=v=>css(BINS.find(b=>v>=b[0]&&v<b[1])[2]);
+const inkOf=v=>v<0?css('--neg'):css('--pos');
+const tip=$('tip');
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const w=tip.offsetWidth;let x=e.clientX+14;if(x+w>innerWidth-8)x=e.clientX-w-14;tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px'}
+function hideTip(){tip.hidden=true}
+function detail(o){
+ const est=o.ev===EST;
+ const who=est?'<b>Estimated:</b> not reported on its own by any of the four countries, so it is inferred from regional data, origin income and refugee history.'
+   :'Measured by '+o.hosts.split(',').map(h=>HOST[h]).join(', ')+(o.ev==='multi-host'?'':' (one study only)')+'.';
+ $('detail').innerHTML=`<div class="row"><h3>${o.name.replace(' (unspecified)','')}</h3><span class="val" style="color:${inkOf(o.mean)}">${sgn(o.mean)}</span><span class="muted">≈ ${money(o.usd)} per person per year compared with a native</span></div>
+ <div class="muted small">Likely range ${sgn(o.lo)} to ${sgn(o.hi)} · rank ${o.rk} of ${O.length} · ${who}</div>`;
 }
-document.getElementById('showImputed').addEventListener('change',rank);
 
-// 2. cross-host
-function cross(){
- const H3=[['DNK','Denmark (2019)',css('--s1')],['SWE','Sweden (2022)',css('--s2')],['FIN','Finland (2011, ages 20–62, age-adj.)',css('--s3')]];
- const om=Object.fromEntries(D.origins.map(o=>[o.iso,o]));
- const rows=D.cross.filter(r=>H3.filter(h=>r[h[0]]!=null).length>=2).sort((a,b)=>(om[b.iso]?.mean??0)-(om[a.iso]?.mean??0));
- const L=190,R=60,T=48,rh=17,W=900,H=T+rows.length*rh+30;const s=frame('c-cross',W,H);
- const x=lin(-60,30,L,W-R);xAxis(s,x,[-60,-50,-40,-30,-20,-10,0,10,20,30],T-6,T+rows.length*rh,pct);
- el('line',{x1:x(0),x2:x(0),y1:T-6,y2:T+rows.length*rh,stroke:css('--mid'),'stroke-width':1.5},s);
- let lx=L;H3.forEach(h=>{el('circle',{cx:lx+5,cy:14,r:5,fill:h[2]},s);const t=txt(s,lx+14,18,h[1]);lx+=t.getComputedTextLength()+40});
- txt(s,L,36,'Gap vs natives as published, % of host GDP per capita',{class:'lab'});
- rows.forEach((r,i)=>{const cy=T+i*rh+rh/2;const g=el('g',{},s);el('rect',{x:0,y:cy-rh/2,width:W,height:rh,fill:'transparent'},g);
-  txt(g,L-8,cy+4,r.name,{'text-anchor':'end'});
-  const v=H3.map(h=>r[h[0]]).filter(a=>a!=null);el('line',{x1:x(Math.min(...v)),x2:x(Math.max(...v)),y1:cy,y2:cy,stroke:css('--axis'),'stroke-width':2},g);
-  H3.forEach(h=>{if(r[h[0]]!=null)el('circle',{cx:x(r[h[0]]),cy,r:5,fill:h[2],stroke:ring,'stroke-width':2},g)});
-  hover(g,`<b>${r.name}</b><br>`+H3.filter(h=>r[h[0]]!=null).map(h=>`${h[1].split(' (')[0]}: ${pct(r[h[0]])}`).join('<br>')+(om[r.iso]?`<br>Model: ${pct(om[r.iso].mean)}`:''));
+// ---------- MAP ----------
+const W=D.world.w,H=D.world.h,map=$('map');
+const VIEWS={world:[0,0,W,H-30],eu:[440,40,210,140]};
+map.setAttribute('viewBox',VIEWS.world.join(' '));
+const defs=el('defs',{},map);
+const pat=el('pattern',{id:'hatch',width:3,height:3,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
+el('line',{x1:0,y1:0,x2:0,y2:3,stroke:'rgba(255,255,255,.6)','stroke-width':1.2},pat);
+let selIso=null;
+function drawMap(){
+ map.querySelectorAll('g').forEach(g=>g.remove());
+ const g=el('g',{},map),gh=el('g',{'pointer-events':'none'},map);
+ D.world.c.forEach(c=>{const o=byIso[c.iso];
+  const path=el('path',{d:c.d,fill:o?colorOf(o.mean):css('--nodata')},g);
+  if(!o){path.addEventListener('mousemove',e=>showTip(e,`<b>${c.name}</b><br>no data`));path.addEventListener('mouseleave',hideTip);return}
+  path.classList.add('has');path.dataset.iso=c.iso;if(c.iso===selIso)path.classList.add('sel');
+  if(o.ev===EST)el('path',{d:c.d,fill:'url(#hatch)'},gh);
+  path.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>${money(o.usd)} per person per year${o.ev===EST?'<br><i>estimated</i>':''}`));
+  path.addEventListener('mouseleave',hideTip);
+  path.addEventListener('click',()=>select(o));
  });
 }
+function select(o){selIso=o.iso;map.querySelectorAll('path.sel').forEach(p=>p.classList.remove('sel'));map.querySelectorAll(`path[data-iso="${o.iso}"]`).forEach(p=>p.classList.add('sel'));detail(o)}
+function legend(){
+ $('legend').innerHTML=BINS.map(b=>`<span><i style="background:${css(b[2])}"></i>${b[3]}</span>`).join('')+
+ `<span><i style="background:repeating-linear-gradient(45deg,${css('--b2')} 0 2px,rgba(255,255,255,.75) 2px 3.5px)"></i>estimated</span><span><i style="background:${css('--nodata')};outline:1px solid ${css('--line')}"></i>no data</span>`;
+}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));
+ animateView(VIEWS[b.dataset.view]);}));
+function animateView(to){const from=map.getAttribute('viewBox').split(' ').map(Number);const t0=performance.now(),dur=500;
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function step(t){const k=reduce?1:Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+  map.setAttribute('viewBox',from.map((f,i)=>f+(to[i]-f)*e).join(' '));if(k<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
 
-// 3. scatters
-const obs=()=>D.origins.filter(o=>o.ev!=='regional aggregate / covariates only');
-const LAB=new Set(['SOM','SYR','IRQ','AFG','ERI','IND','USA','GBR','FIN','IRN','CHN','POL','TUR','BIH','DEU','JPN']);
-function scatter(id,title,xs,xticks,xfmt,xlab,xv,labs){
- const W=440,H=330,L=50,R=14,T=30,B=46;const s=frame(id,W,H);
- const y=lin(-45,30,H-B,T);yAxis(s,y,[-40,-30,-20,-10,0,10,20,30],L,W-R,pct);
- const x=xs(L,W-R);xAxis(s,x,xticks,T,H-B,xfmt);txt(s,(L+W-R)/2,H-8,xlab,{'text-anchor':'middle',class:'lab'});
- txt(s,L,16,title,{class:'title'});
- el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:css('--mid'),'stroke-width':1.5},s);
- obs().forEach(o=>{const cx=x(xv(o)),cy=y(o.mean);const g=el('g',{},s);
-  el('circle',{cx,cy,r:9,fill:'transparent'},g);el('circle',{cx,cy,r:4.5,fill:col(o.mean),stroke:ring,'stroke-width':1.5},g);
-  if(labs.has(o.iso))lbl(g,cx,cy,o.name,W);
-  hover(g,`<b>${o.name}</b><br>Origin effect ${pct(o.mean)}<br>GDP pc ${'$'+o.gdp.toLocaleString('en-US')} PPP<br>Peak refugee outflow ${o.ref} per 1,000`)});
+// ---------- RANKED LIST ----------
+const XMIN=-50,XMAX=30,pos=v=>((Math.max(XMIN,Math.min(XMAX,v))-XMIN)/(XMAX-XMIN)*100);
+function list(){
+ const q=$('search').value.trim().toLowerCase(),showEst=$('showEst').checked||q.length>0;
+ const rows=O.filter(o=>(showEst||o.ev!==EST)&&(!q||o.name.toLowerCase().includes(q))).sort((a,b)=>b.mean-a.mean);
+ const ticks=[-40,-20,0,20];
+ let h=`<div class="axis"><span></span><div class="t">${ticks.map(t=>`<span style="left:${pos(t)}%">${t>0?'+':''}${t}%</span>`).join('')}</div><span></span></div>`;
+ h+=rows.map(o=>{const cc=inkOf(o.mean);
+  return `<div class="li${o.ev===EST?' est':''}" data-iso="${o.iso}"><span class="nm">${o.name.replace(' (unspecified)','')}${o.ev===EST?' <small>est.</small>':''}</span>
+  <div class="track"><div class="zero" style="left:${pos(0)}%"></div><div class="ci" style="left:${pos(o.lo)}%;width:${pos(o.hi)-pos(o.lo)}%;background:${cc}"></div><div class="pt" style="left:${pos(o.mean)}%;background:${cc}"></div></div>
+  <span class="v" style="color:${cc}">${sgn(o.mean)}</span></div>`}).join('');
+ if(!rows.length)h+='<p class="muted">No match.</p>';
+ $('list').innerHTML=h;
+ $('list').querySelectorAll('.li').forEach(r=>{const o=byIso[r.dataset.iso];
+  r.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>likely ${sgn(o.lo)} to ${sgn(o.hi)}<br>${money(o.usd)} per person per year`));
+  r.addEventListener('mouseleave',hideTip);r.addEventListener('click',()=>{select(o);$('detail').scrollIntoView({behavior:'smooth',block:'center'})});});
 }
-function betas(){
- const W=900,H=150,L=290,R=60,T=30;const s=frame('c-beta',W,H);const x=lin(-12,12,L,W-R);
- xAxis(s,x,[-12,-8,-4,0,4,8,12],T-4,T+3*24,v=>(v>0?'+':'')+v+' pp');el('line',{x1:x(0),x2:x(0),y1:T-4,y2:T+72,stroke:css('--mid'),'stroke-width':1.5},s);
- txt(s,L,16,'Effect on the origin effect, percentage points of GDP per capita (90% interval)',{class:'title'});
- const nm=['Origin GDP per capita (+1 SD of log)','Peak refugee outflow (+1 SD of log)','EU / EEA / Swiss origin'];
- D.betas.forEach((b,i)=>{const cy=T+i*24+12;const c=b.lo>0?css('--pos'):b.hi<0?css('--neg'):css('--mid');const g=el('g',{},s);
-  txt(g,L-8,cy+4,nm[i],{'text-anchor':'end'});el('line',{x1:x(b.lo),x2:x(b.hi),y1:cy,y2:cy,stroke:c,'stroke-width':2,'stroke-linecap':'round'},g);
-  el('circle',{cx:x(b.mean),cy,r:5,fill:c,stroke:ring,'stroke-width':2},g);hover(g,`<b>${nm[i]}</b><br>${b.mean} pp (90%: ${b.lo} to ${b.hi})`)});
- txt(s,L,H-4,`Remaining spread between origins after these: SD ${D.tau} pp`,{class:'lab'});
+$('search').addEventListener('input',list);$('showEst').addEventListener('change',list);
+
+// ---------- BUBBLE ----------
+function bubble(){
+ const svg=$('bubble');svg.innerHTML='';const narrow=svg.parentNode.clientWidth<600;
+ const BW=narrow?400:980,BH=narrow?440:430,L=narrow?46:54,R=14,T=48,B=50;svg.setAttribute('viewBox',`0 0 ${BW} ${BH}`);
+ const lx=v=>L+(Math.log10(v)-3)/2*(BW-L-R),ly=v=>T+(28-v)/72*(BH-T-B);
+ const gr=el('g',{class:'grid'},svg);
+ [-40,-20,0,20].forEach(t=>{el('line',{x1:L,x2:BW-R,y1:ly(t),y2:ly(t),style:t===0?`stroke:${css('--mid')};stroke-width:1.5`:null},gr);const tx=el('text',{x:L-8,y:ly(t)+4,'text-anchor':'end'},svg);tx.textContent=(t>0?'+':'')+t+'%'});
+ [1000,3000,10000,30000,100000].forEach(t=>{el('line',{x1:lx(t),x2:lx(t),y1:T,y2:BH-B},gr);const tx=el('text',{x:lx(t),y:BH-B+18,'text-anchor':'middle'},svg);tx.textContent='$'+(t/1000)+'k'});
+ const xl=el('text',{x:(L+BW-R)/2,y:BH-8,'text-anchor':'middle'},svg);xl.textContent='Income per head in the country of origin (PPP, log scale)';
+ const nat=el('text',{x:BW-R-4,y:ly(0)-6,'text-anchor':'end'},svg);nat.textContent='natives';
+ const pts=O.filter(o=>o.ev!==EST).sort((a,b)=>b.ref-a.ref);
+ const rr=v=>(narrow?3.5:4.5)+Math.sqrt(v)*(narrow?0.85:1.45);
+ const LAB=new Set(narrow?['SOM','SYR','IND','USA','PAK','IRQ','GBR']:['SOM','SYR','IRQ','AFG','ERI','IND','USA','GBR','CHN','BIH','IRN','TUR','PAK','POL']);
+ pts.forEach(o=>{const cx=lx(Math.max(1000,o.gdp)),cy=ly(o.mean),c=colorOf(o.mean),r=rr(o.ref);
+  const g=el('g',{},svg);el('circle',{cx,cy,r,fill:c,'fill-opacity':.88,stroke:css('--surface'),'stroke-width':1.5},g);
+  if(LAB.has(o.iso)){const off={GBR:-13,USA:15,BIH:17,TUR:-11}[o.iso]||0;const right=cx>BW-150||o.iso==='ERI';const t=el('text',{x:right?cx-r-4:cx+r+4,y:cy+4+off,'text-anchor':right?'end':'start',style:`fill:${css('--ink')}`},g);t.textContent=o.name}
+  g.style.cursor='pointer';
+  g.addEventListener('mousemove',e=>showTip(e,`<b>${o.name}</b> ${sgn(o.mean)}<br>origin income $${o.gdp.toLocaleString('en-US')}<br>peak refugees ${o.ref} per 1,000 people`));
+  g.addEventListener('mouseleave',hideTip);g.addEventListener('click',()=>select(o));});
+ // size legend
+ let x=narrow?4:L+6;const sy=narrow?22:20;const lt=el('text',{x,y:sy+4,style:`fill:${css('--ink-2')}`},svg);lt.textContent=narrow?'Refugees per 1,000:':'Refugees (peak, per 1,000 people):';x+=narrow?128:226;
+ [[1,'few'],[100,'100'],[300,'300']].forEach(s=>{const r=rr(s[0]);el('circle',{cx:x+r,cy:sy,r,fill:'none',stroke:css('--ink-2')},svg);const t=el('text',{x:x+2*r+5,y:sy+4},svg);t.textContent=s[1];x+=2*r+(narrow?34:44)});
 }
-// 4. lambda + NL
-function lambda(){
- const W=440,H=230,L=110,R=20,T=30;const s=frame('c-lambda',W,H);const x=logs(0.1,100,L,W-R);
- xAxis(s,x,[0.1,1,10,100],T-4,T+4*34,v=>v+'×');txt(s,L,16,'Scale factor λ vs Danish basis (log scale, 90% interval)',{class:'title'});
- const nm={DNK:'Denmark (anchor)',SWE:'Sweden',NLD:'Netherlands',FIN:'Finland'};
- D.hosts.forEach((h,i)=>{const cy=T+i*34+17;const g=el('g',{},s);txt(g,L-8,cy+4,nm[h.host],{'text-anchor':'end'});
-  el('line',{x1:x(h.lo),x2:x(h.hi),y1:cy,y2:cy,stroke:css('--s1'),'stroke-width':2,'stroke-linecap':'round'},g);
-  el('circle',{cx:x(h.lam),cy,r:5,fill:css('--s1'),stroke:ring,'stroke-width':2},g);txt(g,x(h.hi)+8,cy+4,(h.lam>=10?Math.round(h.lam):h.lam)+'×',{class:'lab'});
-  hover(g,`<b>${nm[h.host]}</b><br>λ = ${h.lam} (90%: ${h.lo}–${h.hi})<br>shift α = ${h.alpha} pp`)});
-}
-function nl(){
- const W=440,H=330,L=56,R=14,T=30,B=46;const s=frame('c-nl',W,H);const h=D.hosts.find(h=>h.host==='NLD');
- const x=lin(-45,25,L,W-R),y=lin(-1800,400,H-B,T);
- xAxis(s,x,[-40,-30,-20,-10,0,10,20],T,H-B,pct);yAxis(s,y,[-1600,-1200,-800,-400,0,400],L,W-R,v=>v+'%');el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:css('--mid'),'stroke-width':1.5},s);
- txt(s,(L+W-R)/2,H-8,'Model origin effect (average of member countries)',{'text-anchor':'middle',class:'lab'});
- txt(s,L,16,'Netherlands: lifetime gap, % of GDP per capita',{class:'title'});
- const xa=Math.max(-45,(-1800-h.alpha)/h.lam),xb=Math.min(25,(400-h.alpha)/h.lam);el('line',{x1:x(xa),y1:y(h.alpha+h.lam*xa),x2:x(xb),y2:y(h.alpha+h.lam*xb),stroke:css('--mid'),'stroke-width':1.5,'stroke-dasharray':'4 3'},s);
- const lab=new Set(['Horn of Africa and Sudan','Morocco','Turkey','North America','Afghanistan, Iran, Syria and Iraq']);
- D.nl.forEach(r=>{const cx=x(r.model),cy=y(r.gap);const g=el('g',{},s);el('circle',{cx,cy,r:9,fill:'transparent'},g);
-  el('circle',{cx,cy,r:4.5,fill:col(r.gap),stroke:ring,'stroke-width':1.5},g);if(lab.has(r.label))lbl(g,cx,cy,r.label.replace('Afghanistan, Iran, Syria and Iraq','Afg./Iran/Syria/Iraq'),W);
-  hover(g,`<b>${r.label}</b><br>Lifetime gap ${r.gap}% of GDP pc<br>Model effect ${pct(r.model)}`)});
- txt(s,x(0)+6,y(-1500),'dashed: model fit, λ ≈ '+Math.round(h.lam),{class:'lab'});
-}
-// 5. UK + sensitivity
-function uk(){
- const W=440,H=330,L=50,R=14,T=30,B=46;const s=frame('c-uk',W,H);
- const x=lin(-8000,32000,L,W-R),y=lin(-45,30,H-B,T);
- xAxis(s,x,[-8000,0,8000,16000,24000,32000],T,H-B,v=>(v<0?'−£':'£')+Math.abs(v/1000)+'k');yAxis(s,y,[-40,-30,-20,-10,0,10,20,30],L,W-R,pct);
- txt(s,(L+W-R)/2,H-8,'UK HMRC net per NIC payer, 2019-20 (partial measure)',{'text-anchor':'middle',class:'lab'});
- txt(s,L,16,`Origin effect vs UK tax data (Spearman ${D.uk_rho}, n=${D.uk.length})`,{class:'title'});
- el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:css('--mid'),'stroke-width':1.5},s);
- const lab=new Set(['SOM','IND','USA','AFG','SYR','JPN']);
- D.uk.forEach(o=>{const cx=x(Math.max(-8000,Math.min(32000,o.net))),cy=y(o.model);const g=el('g',{},s);el('circle',{cx,cy,r:9,fill:'transparent'},g);
-  el('circle',{cx,cy,r:4.5,fill:col(o.model),stroke:ring,'stroke-width':1.5},g);if(lab.has(o.iso))lbl(g,cx,cy,o.name,W);
-  hover(g,`<b>${o.name}</b><br>HMRC net £${o.net.toLocaleString('en-GB')} per NIC payer<br>Model effect ${pct(o.model)}`)});
-}
-function sens(){
- const W=440,H=270,L=190,R=30,T=30;const s=frame('c-sens',W,H);const x=lin(0.85,1,L,W-R);
- const nm={dk_with_descendants:'DK incl. descendants',no_FIN:'Without Finland',no_NLD:'Without Netherlands',no_covariates:'No covariates',anchor_SWE:'Sweden as anchor'};
- const rows=D.sens.filter(r=>r.run!=='main');xAxis(s,x,[0.85,0.9,0.95,1],T-4,T+rows.length*34,v=>v.toFixed(2));
- txt(s,L-170,16,'Rank correlation with main run (50 countries)',{class:'title'});
- rows.forEach((r,i)=>{const cy=T+i*34+17;const g=el('g',{},s);txt(g,L-8,cy+4,nm[r.run],{'text-anchor':'end'});
-  el('line',{x1:x(0.85),x2:x(r.rho),y1:cy,y2:cy,stroke:css('--grid'),'stroke-width':2},g);
-  el('circle',{cx:x(r.rho),cy,r:5,fill:css('--s1'),stroke:ring,'stroke-width':2},g);txt(g,x(r.rho)-8,cy-9,r.rho.toFixed(3),{class:'lab','text-anchor':'middle'});
-  hover(g,`<b>${nm[r.run]}</b><br>Spearman ${r.rho}`)});
- txt(s,L-170,H-24,'Axis starts at 0.85.',{class:'lab'});txt(s,L-170,H-8,'Raw agreement between hosts: '+D.pairs.map(p=>p.pair+' '+p.rho).join(', '),{class:'lab'});
-}
-function draw(){rank();cross();
- scatter('c-gdp','Origin effect vs origin GDP per capita',(a,b)=>logs(1000,100000,a,b),[1000,3000,10000,30000,100000],v=>'$'+(v>=1000?v/1000+'k':v),'GDP per capita, PPP 2021 $ (log scale)',o=>Math.max(1000,o.gdp),new Set(['SOM','SYR','IRQ','ERI','IND','USA','CHN','PAK']));
- scatter('c-ref','Origin effect vs refugee outflow',(a,b)=>{const f=lin(0,Math.log10(401),a,b);return v=>f(Math.log10(1+v))},[0,3,10,30,100,300],v=>v,'Peak refugees per 1,000 population (log(1+x) scale)',o=>o.ref,new Set(['SOM','SYR','IRQ','BIH','IRN','ERI']));
- betas();lambda();nl();uk();sens();}
-draw();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+function all(){drawMap();legend();list();bubble()}
+all();select(byIso['SOM']);
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(bubble,150)});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{all();if(selIso)select(byIso[selIso])});
 })();
