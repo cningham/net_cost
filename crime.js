@@ -111,10 +111,10 @@ function all(){document.querySelectorAll('#tab-crime .scale').forEach(b=>b.inner
 function show(){if(!drawn){all();select(byIso['MAR']);drawn=true}}
 tables();
 // tabs
-function route(){const t=location.hash==='#crime'?'crime':'fiscal';
+function route(){const t=location.hash==='#crime'?'crime':location.hash==='#net'?'net':'fiscal';
  document.querySelectorAll('.tabs a').forEach(a=>{a.classList.toggle('on',a.dataset.tab===t);a.setAttribute('aria-selected',a.dataset.tab===t)});
- $('tab-fiscal').hidden=t!=='fiscal';$('tab-crime').hidden=t!=='crime';
- if(t==='crime')show();else dispatchEvent(new Event('resize'));}
+ $('tab-fiscal').hidden=t!=='fiscal';$('tab-crime').hidden=t!=='crime';$('tab-net').hidden=t!=='net';
+ if(t==='crime')show();else if(t==='net')window.NETTAB.show();else dispatchEvent(new Event('resize'));}
 addEventListener('hashchange',()=>{route();scrollTo(0,0)});route();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(drawn){all();if(selIso)select(byIso[selIso])}});
 })();
