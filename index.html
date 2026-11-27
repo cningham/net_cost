@@ -6,7 +6,7 @@
 <title>Immigrants by country of origin: fiscal contribution and crime</title>
 <meta name="description" content="Immigrants by country of origin: net fiscal contribution (Denmark, Sweden, Netherlands, Finland) and recorded crime (nine official sources), combined with Bayesian models.">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 <div class="viz-root">
@@ -24,7 +24,7 @@
     <div class="scale-bar"></div>
     <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
   </div>
-  <p><b>Score</b> = (annual net contribution per person − natives) / host GDP per capita. −10% ≈ −US$<span id="usd10"></span> per person per year (PPP, 2023).</p>
+  <p><b>Score</b> = (annual net contribution per person − natives) / host GDP per capita.</p>
 </section>
 
 <section>
@@ -135,7 +135,7 @@
     <div class="scale-bar"></div>
     <div class="scale-labels"><span>below natives</span><span>natives</span><span>above natives</span></div>
   </div>
-  <p><b>Rate ratio</b> = recorded offending rate of the origin group / natives, same host, adjusted for age and sex. 2.0 = twice the native rate.</p>
+  <p><b>Rate ratio</b> = recorded offending rate of the origin group / natives, same host, adjusted for age and sex.</p>
 </section>
 
 <section>
@@ -267,11 +267,11 @@
 
 </div>
 <div id="tip" class="tip" hidden></div>
-<script src="palette.js?v=12"></script>
-<script src="data/site-data.js?v=12"></script>
-<script src="app.js?v=12"></script>
-<script src="data/crime-data.js?v=12"></script>
-<script src="crime.js?v=12"></script>
+<script src="palette.js?v=13"></script>
+<script src="data/site-data.js?v=13"></script>
+<script src="app.js?v=13"></script>
+<script src="data/crime-data.js?v=13"></script>
+<script src="crime.js?v=13"></script>
 <script defer src="vendor/katex/katex.min.js"></script>
 <script defer src="vendor/katex/auto-render.min.js" onload="document.querySelectorAll('.method').forEach(m=>renderMathInElement(m,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]}))"></script>
 </body>
